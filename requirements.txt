@@ -1,0 +1,7 @@
+# Thư viện cho server báo cháy chạy trên Render
+flask>=3.0,<4
+gunicorn>=22.0
+
+# Chỉ cần khi chạy trên máy tính và đọc ESP32 qua cáp USB (python app.py --port COM3).
+# Trên Render không dùng, nên để dấu # phía trước:
+# pyserial>=3.5
