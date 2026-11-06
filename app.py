@@ -12,6 +12,8 @@ Biến môi trường (đặt ở mục Environment trên Render):
     API_KEY            khóa cho ESP32 gửi dữ liệu (bắt buộc khi chạy thật)
     TELEGRAM_TOKEN     token bot Telegram (tùy chọn, để nhận thông báo về điện thoại)
     TELEGRAM_CHAT_ID   mã chat nhận thông báo (tùy chọn)
+    NTFY_TOPIC         tên chủ đề ntfy để điện thoại kêu chuông khẩn cấp (tùy chọn)
+    NTFY_SERVER        máy chủ ntfy, mặc định https://ntfy.sh (tùy chọn)
     PROJECT_TITLE      tên đề tài hiện trên đầu trang (tùy chọn)
     TEAM_NAME          tên nhóm / tác giả hiện dưới chân trang (tùy chọn)
 
@@ -21,6 +23,7 @@ Thử trên máy tính:
 
 import argparse
 import hmac
+import json
 import math
 import os
 import random
@@ -47,6 +50,11 @@ VALID_STATES = {"BINH THUONG", "CANH BAO: NHIET", "CANH BAO: GAS", "BAO CHAY!"}
 TG_TOKEN = os.environ.get("TELEGRAM_TOKEN", "").strip()
 TG_CHAT = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 TG_ENABLED = bool(TG_TOKEN and TG_CHAT)
+
+# Thông báo ntfy (app miễn phí, có mức ưu tiên khẩn cấp). Để trống = tắt
+NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "").strip()
+NTFY_SERVER = os.environ.get("NTFY_SERVER", "https://ntfy.sh").strip().rstrip("/")
+NTFY_ENABLED = bool(NTFY_TOPIC)
 
 PROJECT_TITLE = os.environ.get("PROJECT_TITLE", "Hệ thống giám sát báo cháy ESP32")
 TEAM_NAME = os.environ.get("TEAM_NAME", "")
@@ -132,6 +140,48 @@ def send_telegram(text: str):
     threading.Thread(target=run, daemon=True).start()
 
 
+# Tiêu đề, mức ưu tiên (1-5) và biểu tượng cho ntfy. 5 = khẩn cấp, kêu to
+NTFY_INFO = {
+    "BAO CHAY!": ("BÁO CHÁY!", 5, ["rotating_light", "fire"]),
+    "CANH BAO: NHIET": ("Cảnh báo nhiệt độ cao", 4, ["warning", "thermometer"]),
+    "CANH BAO: GAS": ("Cảnh báo gas/khói", 4, ["warning", "dash"]),
+    "BINH THUONG": ("Đã trở lại bình thường", 3, ["white_check_mark"]),
+}
+
+
+def send_ntfy(title: str, text: str, priority: int = 3, tags=None):
+    """Gửi thông báo ntfy ở luồng riêng. Dùng JSON để gửi được tiếng Việt có dấu."""
+    if not NTFY_ENABLED:
+        return
+
+    def run():
+        try:
+            payload = json.dumps(
+                {
+                    "topic": NTFY_TOPIC,
+                    "title": title,
+                    "message": text,
+                    "priority": priority,
+                    "tags": tags or [],
+                }
+            ).encode("utf-8")
+            req = urllib.request.Request(
+                NTFY_SERVER,
+                data=payload,
+                headers={"Content-Type": "application/json"},
+            )
+            urllib.request.urlopen(req, timeout=10).read()
+        except Exception as e:
+            print("[ntfy] gửi lỗi:", type(e).__name__, e)
+
+    threading.Thread(target=run, daemon=True).start()
+
+
+def notify_all(text: str, title: str, priority: int = 3, tags=None):
+    send_telegram(text)
+    send_ntfy(title, text, priority, tags)
+
+
 def describe(sample: dict) -> str:
     t = "--" if sample["temp"] is None else f"{sample['temp']:.1f}°C"
     return f"{STATE_TEXT.get(sample['state'], sample['state'])}\nNhiệt độ: {t} | Gas (ADC): {sample['gas']}"
@@ -169,9 +219,12 @@ def push(sample: dict, source: str):
                 stats["fire_count"] += 1
             # Lần đầu nhận mẫu mà đã bình thường thì không cần báo
             if not (prev is None and sample["state"] == "BINH THUONG"):
-                notify = describe(sample)
+                notify = sample
     if notify:
-        send_telegram(notify)
+        title, prio, tags = NTFY_INFO.get(
+            notify["state"], (notify["state"], 3, [])
+        )
+        notify_all(describe(notify), title, prio, tags)
 
 
 def stats_snapshot():
@@ -179,6 +232,7 @@ def stats_snapshot():
         s = dict(stats)
     s["uptime"] = time.time() - s["since"]
     s["telegram"] = TG_ENABLED
+    s["ntfy"] = NTFY_ENABLED
     return s
 
 
@@ -197,15 +251,20 @@ def watcher():
         age = time.time() - ts
         if age > OFFLINE_AFTER and not _offline_notified:
             _offline_notified = True
-            send_telegram("📡 Mất kết nối: mạch ESP32 không gửi dữ liệu hơn 1 phút.")
+            notify_all("📡 Mất kết nối: mạch ESP32 không gửi dữ liệu hơn 1 phút.", "Mất kết nối", 4, ["satellite"])
         elif age <= OFFLINE_AFTER and _offline_notified:
             _offline_notified = False
-            send_telegram("📡 Mạch ESP32 đã kết nối lại.")
+            notify_all("📡 Mạch ESP32 đã kết nối lại.", "Đã kết nối lại", 3, ["satellite"])
 
 
-if TG_ENABLED:
+if TG_ENABLED or NTFY_ENABLED:
     threading.Thread(target=watcher, daemon=True).start()
-    send_telegram("🔔 Hệ thống giám sát báo cháy đã khởi động. Thông báo Telegram hoạt động.")
+    notify_all(
+        "🔔 Hệ thống giám sát báo cháy đã khởi động. Thông báo điện thoại hoạt động.",
+        "Hệ thống đã khởi động",
+        3,
+        ["bell"],
+    )
 
 
 # ---------------- Nguồn dữ liệu ----------------
