@@ -64,6 +64,13 @@ OFFLINE_AFTER = 60  # quá 60 giây không có dữ liệu thì coi là mất k�
 lock = threading.Lock()
 history = deque(maxlen=900)  # ~30 phút nếu 2 giây một mẫu
 latest = None
+
+# Lệnh bật còi từ web. ESP32 nhận lệnh qua phản hồi của POST /api/data.
+# Tự tắt sau REMOTE_BUZZER_MAX giây để còi không kêu mãi nếu quên tắt.
+REMOTE_BUZZER_MAX = 60
+BOARD_LIVE_WITHIN = 15  # mạch gửi dữ liệu trong 15 giây gần nhất thì coi là đang online
+remote = {"buzzer": False, "until": 0.0}
+_last_notify = 0.0
 events = deque(maxlen=50)  # nhật ký thay đổi trạng thái
 stats = {
     "since": time.time(),
@@ -227,6 +234,14 @@ def push(sample: dict, source: str):
         notify_all(describe(notify), title, prio, tags)
 
 
+def remote_buzzer_active() -> bool:
+    """Lệnh bật còi từ web còn hiệu lực không (tự hết hạn sau REMOTE_BUZZER_MAX giây)."""
+    with lock:
+        if remote["buzzer"] and time.time() > remote["until"]:
+            remote["buzzer"] = False
+        return remote["buzzer"]
+
+
 def stats_snapshot():
     with lock:
         s = dict(stats)
@@ -355,7 +370,12 @@ def api_latest():
     with lock:
         cur = latest
     return jsonify(
-        {"latest": cur, "stats": stats_snapshot(), "server_time": time.time()}
+        {
+            "latest": cur,
+            "stats": stats_snapshot(),
+            "server_time": time.time(),
+            "remote_buzzer": remote_buzzer_active(),
+        }
     )
 
 
@@ -400,7 +420,56 @@ def api_data():
         },
         "wifi",
     )
-    return jsonify({"ok": True})
+    # Trả kèm lệnh còi để ESP32 biết có cần bật còi hay không
+    return jsonify({"ok": True, "buzzer": remote_buzzer_active()})
+
+
+@app.route("/api/control", methods=["POST"])
+def api_control():
+    """Lệnh từ web: {"action":"buzzer","on":true} hoặc {"action":"notify"}"""
+    global _last_notify
+    body = request.get_json(silent=True) or {}
+    action = body.get("action")
+    with lock:
+        cur = latest
+    age = (time.time() - cur["ts"]) if cur else None
+
+    if action == "buzzer":
+        on = bool(body.get("on"))
+        if on and (age is None or age > BOARD_LIVE_WITHIN):
+            return jsonify({"ok": False, "error": "Mạch đang offline, không bật được còi"}), 409
+        with lock:
+            remote["buzzer"] = on
+            remote["until"] = time.time() + REMOTE_BUZZER_MAX
+        if on:
+            notify_all(
+                f"🔔 Còi trên mạch vừa được bật từ web (tự tắt sau {REMOTE_BUZZER_MAX} giây).",
+                "Bật còi từ web",
+                3,
+                ["bell"],
+            )
+        return jsonify({"ok": True, "buzzer": on})
+
+    if action == "notify":
+        if not (NTFY_ENABLED or TG_ENABLED):
+            return jsonify({"ok": False, "error": "Chưa cấu hình NTFY_TOPIC trên Render"}), 503
+        if cur is None:
+            return jsonify({"ok": False, "error": "Chưa có dữ liệu từ mạch"}), 409
+        now = time.time()
+        if now - _last_notify < 5:  # chống bấm liên tục
+            return jsonify({"ok": False, "error": "Vui lòng đợi vài giây rồi gửi lại"}), 429
+        _last_notify = now
+        t = "--" if cur["temp"] is None else f"{cur['temp']:.1f}°C"
+        label = {"BINH THUONG": "Bình thường"}.get(cur["state"], cur["state"])
+        notify_all(
+            f"📋 Báo cáo từ web\nTrạng thái: {label}\nNhiệt độ: {t} | Gas (ADC): {cur['gas']}",
+            "Báo cáo từ web",
+            3,
+            ["clipboard"],
+        )
+        return jsonify({"ok": True})
+
+    return jsonify({"ok": False, "error": "lệnh không hợp lệ"}), 400
 
 
 def main():
