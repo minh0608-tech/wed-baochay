@@ -30,6 +30,7 @@ import random
 import re
 import threading
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections import deque
@@ -156,30 +157,43 @@ NTFY_INFO = {
 }
 
 
+def ntfy_publish(title: str, text: str, priority: int = 3, tags=None):
+    """Gửi 1 thông báo ntfy và đợi kết quả. Trả về None nếu thành công, hoặc chuỗi mô tả lỗi."""
+    try:
+        payload = json.dumps(
+            {
+                "topic": NTFY_TOPIC,
+                "title": title,
+                "message": text,
+                "priority": priority,
+                "tags": tags or [],
+            }
+        ).encode("utf-8")
+        req = urllib.request.Request(
+            NTFY_SERVER,
+            data=payload,
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "baochay-esp32/1.0",
+            },
+        )
+        urllib.request.urlopen(req, timeout=10).read()
+        return None
+    except urllib.error.HTTPError as e:
+        return f"ntfy trả mã {e.code} ({e.reason})"
+    except Exception as e:
+        return f"{type(e).__name__}: {e}"
+
+
 def send_ntfy(title: str, text: str, priority: int = 3, tags=None):
     """Gửi thông báo ntfy ở luồng riêng. Dùng JSON để gửi được tiếng Việt có dấu."""
     if not NTFY_ENABLED:
         return
 
     def run():
-        try:
-            payload = json.dumps(
-                {
-                    "topic": NTFY_TOPIC,
-                    "title": title,
-                    "message": text,
-                    "priority": priority,
-                    "tags": tags or [],
-                }
-            ).encode("utf-8")
-            req = urllib.request.Request(
-                NTFY_SERVER,
-                data=payload,
-                headers={"Content-Type": "application/json"},
-            )
-            urllib.request.urlopen(req, timeout=10).read()
-        except Exception as e:
-            print("[ntfy] gửi lỗi:", type(e).__name__, e)
+        err = ntfy_publish(title, text, priority, tags)
+        if err:
+            print("[ntfy] gửi lỗi:", err)
 
     threading.Thread(target=run, daemon=True).start()
 
@@ -461,12 +475,14 @@ def api_control():
         _last_notify = now
         t = "--" if cur["temp"] is None else f"{cur['temp']:.1f}°C"
         label = {"BINH THUONG": "Bình thường"}.get(cur["state"], cur["state"])
-        notify_all(
-            f"📋 Báo cáo từ web\nTrạng thái: {label}\nNhiệt độ: {t} | Gas (ADC): {cur['gas']}",
-            "Báo cáo từ web",
-            3,
-            ["clipboard"],
-        )
+        text = f"📋 Báo cáo từ web\nTrạng thái: {label}\nNhiệt độ: {t} | Gas (ADC): {cur['gas']}"
+        send_telegram(text)
+        if NTFY_ENABLED:
+            # Gửi ntfy và đợi kết quả để báo lỗi thật về web (không chỉ "đã gửi")
+            err = ntfy_publish("Báo cáo từ web", text, 3, ["clipboard"])
+            if err:
+                print("[ntfy] gửi lỗi:", err)
+                return jsonify({"ok": False, "error": f"Gửi ntfy thất bại: {err}"}), 502
         return jsonify({"ok": True})
 
     return jsonify({"ok": False, "error": "lệnh không hợp lệ"}), 400
