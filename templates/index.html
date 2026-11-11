@@ -2,767 +2,291 @@
 <html lang="vi" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#070a26">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ title }}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  @property --ang { syntax:'<angle>'; inherits:false; initial-value:0deg; }
-
   :root {
-    --text:#eef4ff; --muted:#9fb3d6; --ok:#22c55e; --warn:#f59e0b; --danger:#ff3b30;
+    --bg:#090d14; --panel:rgba(18,26,38,.78); --line:#22324a; --text:#e7eef7; --muted:#8a9bb3;
+    --ok:#22c55e; --warn:#f59e0b; --danger:#ef4444; --off:#64748b; --accent:#38bdf8;
+    --glow:rgba(56,189,248,.10); --track:#1b283b; --wall:#1c2a40;
     --mono: ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
-    --num: 'Orbitron','Be Vietnam Pro',var(--mono),sans-serif;
-    --ui: 'Be Vietnam Pro',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    /* màu theo trạng thái (mặc định = báo cháy) */
-    --bn-a:#ff3b30; --bn-b:#ff8a5c; --bn-in1:#5e0b14; --bn-in2:#2a0409; --siren:#ff2d2d; --m2c:#ffd23f;
-    --hz:repeating-linear-gradient(135deg,#f5b400 0 14px,#16110a 14px 28px);
-    --glow:rgba(255,59,48,.30);
-    --a1:rgba(255,60,40,.38); --a2:rgba(255,160,0,.30); --a3:rgba(255,0,120,.26);
   }
-  body[data-state="ok"]   { --bn-a:#22c55e; --bn-b:#86efac; --bn-in1:#06402a; --bn-in2:#021a10; --siren:#22c55e; --m2c:#86efac; --glow:rgba(34,197,94,.18);
-                            --hz:linear-gradient(#0b3a24,#0b3a24); --a1:rgba(0,210,255,.34); --a2:rgba(160,80,255,.36); --a3:rgba(0,255,170,.18); }
-  body[data-state="warn"] { --bn-a:#f59e0b; --bn-b:#ffd36a; --bn-in1:#4d2e05; --bn-in2:#241402; --siren:#ff9d00; --glow:rgba(245,158,11,.26);
-                            --a1:rgba(255,170,0,.34); --a2:rgba(255,90,0,.28); --a3:rgba(255,220,0,.18); }
-  body[data-state="off"]  { --bn-a:#64748b; --bn-b:#94a3b8; --bn-in1:#1e293b; --bn-in2:#0b1220; --siren:#64748b; --m2c:#cbd5e1; --glow:rgba(100,116,139,.16);
-                            --hz:linear-gradient(#1c2638,#1c2638); --a1:rgba(100,116,139,.28); --a2:rgba(71,85,105,.28); --a3:rgba(148,163,184,.12); }
+  :root[data-theme="light"] {
+    --bg:#eef2f8; --panel:rgba(255,255,255,.86); --line:#d5deeb; --text:#122033; --muted:#5a6b82;
+    --glow:rgba(56,189,248,.14); --track:#e2e9f3; --wall:#dfe7f2;
+  }
+  body[data-state="ok"]   { --glow:rgba(34,197,94,.16); }
+  body[data-state="warn"] { --glow:rgba(245,158,11,.24); }
+  body[data-state="fire"] { --glow:rgba(239,68,68,.34); }
+  body[data-state="off"]  { --glow:rgba(100,116,139,.18); }
 
   * { box-sizing:border-box; }
-  html { color-scheme:dark; background:#070a26; }
-  body { margin:0; min-height:100vh; color:var(--text); font-family:var(--ui); overflow-x:hidden;
-         background:
-           radial-gradient(1200px 600px at 85% -10%, rgba(120,70,255,.38), transparent 70%),
-           radial-gradient(1000px 560px at -5% 0, rgba(0,190,255,.30), transparent 70%),
-           radial-gradient(1000px 500px at 50% 120%, var(--glow), transparent 70%),
-           linear-gradient(180deg,#0b1038,#080b2b 55%,#12072b); }
-  body::before { content:""; position:fixed; inset:0; pointer-events:none; opacity:.35;
-         background-image:linear-gradient(rgba(70,110,200,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(70,110,200,.07) 1px,transparent 1px);
-         background-size:46px 46px; -webkit-mask-image:linear-gradient(180deg,#000,transparent 70%); mask-image:linear-gradient(180deg,#000,transparent 70%); }
-  body::after { content:""; position:fixed; inset:-20%; z-index:0; pointer-events:none; filter:blur(34px); opacity:.8; animation:aur 14s ease-in-out infinite alternate;
-         background:radial-gradient(40% 35% at 20% 30%,var(--a1),transparent 70%), radial-gradient(35% 30% at 80% 25%,var(--a2),transparent 70%), radial-gradient(40% 35% at 55% 85%,var(--a3),transparent 70%); }
+  html { color-scheme: dark; }
+  :root[data-theme="light"] { color-scheme: light; }
+  body { margin:0; min-height:100vh; color:var(--text);
+         font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+         background: radial-gradient(1100px 520px at 78% -8%, var(--glow), transparent 70%),
+                     radial-gradient(900px 480px at 0% 110%, var(--glow), transparent 70%), var(--bg); }
+  .wrap { max-width:1180px; margin:0 auto; padding:16px; }
 
-  /* ===== Keyframes ===== */
-  @keyframes spin { to { --ang:360deg; } }
-  @keyframes spin2 { to { transform:rotate(360deg); } }
-  @keyframes aur { from { transform:translate3d(-3%,-2%,0) rotate(-3deg) scale(1); } to { transform:translate3d(3%,3%,0) rotate(5deg) scale(1.12); } }
-  @keyframes rise { from { opacity:0; transform:translateY(26px) scale(.97); } to { opacity:1; transform:none; } }
-  @keyframes shim { to { background-position:300% 0; } }
-  @keyframes floaty { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
-  @keyframes scanbg { from { background-position:0 100%; } to { background-position:0 0; } }
-  @keyframes numPulse { 50% { filter:drop-shadow(0 0 30px rgba(var(--cc),.95)) brightness(1.2); } }
-  @keyframes badgeP { 50% { box-shadow:0 0 30px rgba(var(--cc),.95), inset 0 0 20px rgba(var(--cc),.5); transform:scale(1.04); } }
-  @keyframes ringP { 0% { transform:scale(1); opacity:.8; } 100% { transform:scale(1.55); opacity:0; } }
-  @keyframes bellRing { 0%,100% { transform:rotate(0); } 15% { transform:rotate(18deg); } 30% { transform:rotate(-16deg); } 45% { transform:rotate(12deg); } 60% { transform:rotate(-8deg); } 75% { transform:rotate(0); } }
-  @keyframes shieldP { 50% { transform:scale(1.07); filter:drop-shadow(0 0 24px rgba(34,255,130,.95)); } }
-  @keyframes shine { from { background-position:150% 0; } to { background-position:-100% 0; } }
-  @keyframes hbDash { from { stroke-dashoffset:140; } to { stroke-dashoffset:0; } }
-  @keyframes up { 0% { transform:translate(0,0); opacity:0; } 10% { opacity:1; } 100% { transform:translate(var(--x),-100vh); opacity:0; } }
-  @keyframes logoP { 50% { filter:drop-shadow(0 0 26px rgba(255,140,0,.95)); transform:scale(1.05); } }
-  @keyframes pingR { 70% { box-shadow:0 0 0 12px rgba(59,255,122,0); } 100% { box-shadow:0 0 0 0 rgba(59,255,122,0); } }
+  /* Khung báo động toàn màn hình */
+  .alarm-frame { position:fixed; inset:0; pointer-events:none; z-index:50; opacity:0; transition:opacity .25s; }
+  body[data-state="fire"] .alarm-frame { opacity:1; box-shadow: inset 0 0 0 6px var(--danger), inset 0 0 120px rgba(239,68,68,.55); animation:framePulse .9s ease-in-out infinite; }
+  body[data-state="warn"] .alarm-frame { opacity:1; box-shadow: inset 0 0 0 4px var(--warn), inset 0 0 90px rgba(245,158,11,.4); animation:framePulse 1.4s ease-in-out infinite; }
   @keyframes framePulse { 50% { opacity:.45; } }
-  @keyframes lick { from { transform:scaleY(.82) skewX(-5deg); } to { transform:scaleY(1.16) skewX(5deg); } }
-  @keyframes flick { from { transform:scale(.88,.94) rotate(-3deg); } to { transform:scale(1.08,1.1) rotate(3deg); } }
-  @keyframes drift { from { transform:translateY(8px) scale(.9); } to { transform:translateY(-14px) scale(1.15); } }
-  @keyframes halo { from { transform:scale(.8); opacity:.35; } to { transform:scale(1.25); opacity:.8; } }
-  @keyframes hzmove { to { background-position:40px 0; } }
-  @keyframes chev { from { transform:translateX(-5px); } to { transform:translateX(7px); } }
-  @keyframes bannerPulse { 50% { filter:drop-shadow(0 0 34px var(--bn-a)) brightness(1.12); } }
-  @keyframes wave { 50% { opacity:.25; } }
-  @keyframes lt { 50% { opacity:.2; } }
-  @keyframes smoke { 0% { transform:translateY(0) scale(.6); opacity:0; } 20% { opacity:.55; } 100% { transform:translateY(-90px) scale(1.7); opacity:0; } }
-  @keyframes load { to { width:100%; } }
-  @keyframes drop { from { transform:translate(-50%,-140%); opacity:0; } to { transform:translate(-50%,0); opacity:1; } }
-  @keyframes wag { 0%,100% { transform:rotate(-4deg); } 50% { transform:rotate(5deg); } }
 
-  /* ===== Hiệu ứng toàn trang ===== */
-  .alarm-frame { position:fixed; inset:0; pointer-events:none; z-index:60; opacity:0; transition:opacity .25s; }
-  body[data-state="fire"] .alarm-frame { opacity:1; box-shadow:inset 0 0 0 5px var(--danger), inset 0 0 120px rgba(255,59,48,.5); animation:framePulse .9s ease-in-out infinite; }
-  body[data-state="warn"] .alarm-frame { opacity:1; box-shadow:inset 0 0 0 4px var(--warn), inset 0 0 90px rgba(245,158,11,.38); animation:framePulse 1.4s ease-in-out infinite; }
-  .fire-bg { position:fixed; left:0; right:0; bottom:0; height:52vh; pointer-events:none; z-index:1; opacity:0; transition:opacity .6s; overflow:hidden;
-             background:linear-gradient(to top, rgba(255,90,0,.50), rgba(255,60,0,.16) 40%, transparent); }
-  .fire-bg::before { content:""; position:absolute; inset:0;
-             background:radial-gradient(600px 260px at 20% 40%, rgba(120,60,220,.20), transparent 70%), radial-gradient(700px 300px at 85% 30%, rgba(120,60,220,.18), transparent 70%); }
-  body[data-state="fire"] .fire-bg { opacity:1; } body[data-state="warn"] .fire-bg { opacity:.55; }
-  .fire-bg i { position:absolute; bottom:-34px; left:var(--l); width:var(--w); height:var(--h);
-               background:radial-gradient(ellipse at 50% 88%, #fff1a0 0, #ffb21f 30%, #ff4d00 60%, transparent 72%);
-               border-radius:50% 50% 45% 45% / 72% 72% 28% 28%; filter:blur(5px); transform-origin:50% 100%; animation:lick var(--d) ease-in-out infinite alternate; }
-  .embers { position:fixed; inset:0; pointer-events:none; z-index:2; opacity:0; transition:opacity .6s; overflow:hidden; --ec:#ffb347; }
-  body[data-state="fire"] .embers { opacity:1; } body[data-state="warn"] .embers { opacity:.6; } body[data-state="ok"] .embers { opacity:.55; --ec:#5cffd0; }
-  .embers i { position:absolute; bottom:-12px; width:var(--s); height:var(--s); border-radius:50%; background:var(--ec); box-shadow:0 0 10px var(--ec), 0 0 20px var(--ec); animation:up var(--d) linear infinite; }
-  .cursor-glow { position:fixed; left:-170px; top:-170px; width:340px; height:340px; border-radius:50%; pointer-events:none; z-index:1; opacity:0;
-                 background:radial-gradient(circle,rgba(90,170,255,.22),transparent 65%); transition:opacity .4s; mix-blend-mode:screen; will-change:transform; }
+  header { display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .brand { display:flex; align-items:center; gap:12px; min-width:0; }
+  .logo { width:42px; height:42px; border-radius:12px; display:grid; place-items:center; flex:none;
+          background:linear-gradient(135deg,#f97316,#ef4444); box-shadow:0 6px 22px rgba(239,68,68,.35); }
+  .logo svg { width:24px; height:24px; }
+  h1 { font-size:19px; margin:0; line-height:1.2; }
+  .sub { font-size:12.5px; color:var(--muted); margin-top:2px; }
+  .tools { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .conn { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); padding:7px 12px;
+          border:1px solid var(--line); border-radius:999px; background:var(--panel); }
+  .dot { width:9px; height:9px; border-radius:50%; background:var(--off); }
+  .dot.on { background:var(--ok); box-shadow:0 0 0 0 rgba(34,197,94,.6); animation:ping 1.6s infinite; }
+  @keyframes ping { 70% { box-shadow:0 0 0 8px rgba(34,197,94,0); } 100% { box-shadow:0 0 0 0 rgba(34,197,94,0); } }
+  button.btn { font:inherit; font-size:13px; color:var(--text); background:var(--panel); border:1px solid var(--line);
+               border-radius:999px; padding:7px 13px; cursor:pointer; }
+  button.btn:hover { border-color:var(--accent); }
+  button.btn.active { border-color:var(--ok); color:var(--ok); }
 
-  /* Màn khởi động */
-  .boot { position:fixed; inset:0; z-index:200; display:grid; place-items:center; text-align:center; background:radial-gradient(800px 500px at 50% 40%,#17235e,#050818); transition:opacity .7s, visibility .7s; }
-  .boot.hide { opacity:0; visibility:hidden; }
-  .boot svg { width:124px; height:114px; animation:logoP 1.2s ease-in-out infinite; }
-  .boot .tx { margin-top:14px; font-size:15px; letter-spacing:.34em; text-transform:uppercase; color:#bfe3ff; }
-  .boot .bar { width:260px; height:6px; border-radius:9px; background:rgba(255,255,255,.12); margin:18px auto 0; overflow:hidden; }
-  .boot .bar i { display:block; height:100%; width:0; background:linear-gradient(90deg,#22d3ee,#a78bfa,#ff5a3a); animation:load 1.4s ease forwards; box-shadow:0 0 12px #7aa8ff; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px;
+           backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .panel h2 { margin:0 0 10px; font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600; }
 
-  /* ===== Khung chính (thiết kế 1672 x 941, tự co giãn) ===== */
-  .wrap { position:relative; z-index:3; padding:12px 18px 14px; transform-origin:0 0; }
+  /* Hero */
+  .hero { display:flex; align-items:center; gap:18px; padding:22px; border-radius:20px; margin-bottom:14px; color:#fff;
+          background:linear-gradient(120deg,#334155,#475569); transition:background .3s; }
+  body[data-state="ok"]   .hero { background:linear-gradient(120deg,#047857,#16a34a); }
+  body[data-state="warn"] .hero { background:linear-gradient(120deg,#b45309,#f59e0b); }
+  body[data-state="fire"] .hero { background:linear-gradient(120deg,#991b1b,#ef4444); animation:heroPulse 1s ease-in-out infinite; }
+  @keyframes heroPulse { 50% { filter:brightness(1.22); } }
+  .hero .ico { font-size:52px; line-height:1; flex:none; }
+  body[data-state="fire"] .hero .ico { animation:shake .5s infinite; }
+  @keyframes shake { 25% { transform:rotate(-8deg) scale(1.08); } 75% { transform:rotate(8deg) scale(1.08); } }
+  .hero .big { font-size:clamp(22px,4.4vw,36px); font-weight:800; letter-spacing:.3px; line-height:1.15; }
+  .hero .desc { margin-top:5px; opacity:.92; font-size:14.5px; }
+  .hero .chips { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .chip { font-size:12.5px; padding:4px 11px; border-radius:999px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.25); }
 
-  .top { display:flex; flex-wrap:wrap; gap:14px; justify-content:space-between; align-items:center; height:104px; margin-bottom:8px; }
-  .brand { display:flex; align-items:center; gap:14px; min-width:0; }
-  .logo { width:84px; height:76px; flex:none; filter:drop-shadow(0 0 14px rgba(255,90,0,.55)); animation:logoP 2s ease-in-out infinite; }
-  h1 { margin:0; font-size:44px; font-weight:900; font-style:italic; letter-spacing:.5px; line-height:1.1; text-transform:uppercase; white-space:nowrap;
-       text-shadow:0 2px 0 rgba(0,0,0,.5), 0 0 22px rgba(90,170,255,.6); }
-  h1 .red { background-image:linear-gradient(90deg,#ff4d3a,#ffd23f,#ff2d6a,#ff4d3a); background-size:300% 100%;
-            -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; text-shadow:none;
-            animation:shim 3.2s linear infinite; filter:drop-shadow(0 0 12px rgba(255,70,40,.8)); }
-  .tagline { display:flex; align-items:center; gap:10px; margin-top:4px; font-size:20px; }
-  .tagline i { background-image:linear-gradient(90deg,#9fe7ff,#fff,#ffd6a8); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
-  .tagline svg.hb { width:92px; height:24px; flex:none; }
-  .tagline svg.hb polyline { stroke:#ff4d6a; stroke-dasharray:140; animation:hbDash 1.6s linear infinite; }
-  .tagline svg.sh { width:30px; height:30px; flex:none; }
-  .hright { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-  .pill { display:flex; align-items:center; gap:12px; padding:10px 22px; border-radius:999px; font-size:16px;
-          background:linear-gradient(160deg,rgba(14,26,62,.85),rgba(6,12,34,.9)); border:1.5px solid rgba(90,180,255,.7);
-          box-shadow:0 0 22px rgba(60,150,255,.4), inset 0 0 16px rgba(60,150,255,.15); }
-  .pill svg { width:34px; height:34px; flex:none; }
-  .conn.on { border-color:#3bff7a; box-shadow:0 0 22px rgba(59,255,122,.45); animation:pingR 1.8s infinite; }
-  .conn.on b { color:#3bff7a; text-shadow:0 0 10px rgba(59,255,122,.6); } .conn.on svg { color:#3bff7a; }
-  .conn.off b, .conn.off svg { color:#ff6b6b; }
-  .clock { padding:8px 24px; }
-  .clock .t { font-family:var(--num); font-size:26px; font-weight:800; letter-spacing:1.5px; line-height:1.1;
-              background-image:linear-gradient(180deg,#fff,#8fd8ff); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; filter:drop-shadow(0 0 8px rgba(80,180,255,.7)); }
-  .clock .d { font-size:14px; color:var(--muted); text-align:center; }
-  .iconbtn { appearance:none; width:54px; height:54px; padding:0; border-radius:50%; cursor:pointer; color:#cfe4ff; display:grid; place-items:center;
-             background:linear-gradient(160deg,rgba(14,26,62,.85),rgba(6,12,34,.9)); border:1.5px solid rgba(90,180,255,.7); box-shadow:0 0 18px rgba(60,150,255,.35); transition:.2s; }
-  .iconbtn:hover { transform:scale(1.08); box-shadow:0 0 26px rgba(90,180,255,.7); }
-  .iconbtn svg { width:26px; height:26px; }
+  .grid3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-bottom:14px; }
 
-  .layout { display:grid; gap:14px; align-items:stretch;
-            grid-template-columns:120px minmax(0,1fr) minmax(0,1.05fr) 400px; grid-template-rows:310px 250px 200px;
-            grid-template-areas:"side t g c" "side sc sc sc" "bt bt bt bt"; }
+  /* Gauge */
+  .gauge { text-align:center; }
+  .gauge svg { width:100%; max-width:320px; height:auto; display:block; margin:0 auto; }
+  .gauge .needle { transform-origin:100px 100px; transition:transform .7s cubic-bezier(.3,1.3,.5,1); }
+  .gauge .val { font-family:var(--mono); font-size:40px; font-weight:700; margin-top:-6px; letter-spacing:-.5px; }
+  .gauge .val small { font-size:16px; color:var(--muted); font-weight:500; margin-left:4px; }
+  .gauge .tag { display:inline-block; margin-top:6px; font-size:12.5px; font-weight:600; padding:3px 12px; border-radius:999px;
+                background:rgba(34,197,94,.15); color:var(--ok); }
+  .gauge .tag.warn { background:rgba(245,158,11,.16); color:var(--warn); }
+  .gauge .tag.danger { background:rgba(239,68,68,.16); color:var(--danger); }
+  .gauge .hint { font-size:12px; color:var(--muted); margin-top:8px; }
 
-  /* ===== Thẻ kính + viền neon xoay ===== */
-  .card, .cpanel, .side { --cc:56,150,255; position:relative; border-radius:22px;
-          background:linear-gradient(160deg,rgba(14,24,58,.84),rgba(5,10,30,.88)); border:1.5px solid rgba(var(--cc),.5);
-          backdrop-filter:blur(14px) saturate(1.4); -webkit-backdrop-filter:blur(14px) saturate(1.4); transition:transform .25s ease-out; }
-  .card { padding:16px 22px; box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 18px 40px rgba(0,0,0,.45), 0 0 34px rgba(var(--cc),.35); }
-  .card::before, .cpanel::before, .side::before { content:""; position:absolute; inset:0; border-radius:inherit; padding:2.5px; pointer-events:none; z-index:2;
-        background:conic-gradient(from var(--ang), transparent 0 55%, rgba(var(--cc),.9) 78%, #fff 90%, transparent 100%); animation:spin 4.5s linear infinite;
-        -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); mask-composite:exclude; }
-  .card::after { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:1;
-        background:linear-gradient(180deg,transparent 40%,rgba(255,255,255,.06) 50%,transparent 60%); background-size:100% 300%; animation:scanbg 6s linear infinite; }
-  body[data-state="fire"] .card::before { animation-duration:1.6s; }
-  .side, .tcard, .gcard, .charts, .scene, .bottom { animation:rise .8s cubic-bezier(.2,.9,.3,1) backwards; }
-  .tcard { animation-delay:.08s; } .gcard { animation-delay:.16s; } .charts { animation-delay:.24s; } .scene { animation-delay:.34s; } .bottom { animation-delay:.46s; }
+  /* Nhà */
+  .house svg { width:100%; height:auto; display:block; }
+  .room { fill:var(--wall); stroke:var(--line); stroke-width:1.5; transition:fill .3s; }
+  .room.sensor.ok   { fill:rgba(34,197,94,.22); stroke:var(--ok); }
+  .room.sensor.warn { fill:rgba(245,158,11,.30); stroke:var(--warn); }
+  .room.sensor.fire { fill:rgba(239,68,68,.38); stroke:var(--danger); animation:roomPulse .8s infinite; }
+  .room.sensor.off  { stroke:var(--off); }
+  @keyframes roomPulse { 50% { fill:rgba(239,68,68,.15); } }
+  .rtext { fill:var(--muted); font-size:9.5px; text-anchor:middle; }
+  .flame { opacity:0; transform-origin:95px 138px; }
+  body[data-state="fire"] .flame { opacity:1; animation:flicker .35s infinite alternate; }
+  body[data-state="warn"] .flame { opacity:.8; animation:flicker .6s infinite alternate; }
+  @keyframes flicker { from { transform:scale(.88) rotate(-4deg); } to { transform:scale(1.12) rotate(4deg); } }
+  .legend { font-size:12px; color:var(--muted); margin-top:6px; }
 
-  /* Thanh bên */
-  .side { grid-area:side; --cc:120,110,255; display:flex; flex-direction:column; justify-content:space-around; gap:8px; padding:12px 8px; }
-  .nav { --nc:34,211,238; appearance:none; font:inherit; color:#d3e1fa; background:transparent; border:1.5px solid transparent; border-radius:16px; padding:12px 4px 10px;
-         display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; font-size:15px; transition:.25s; }
-  .nav:nth-child(1) { --nc:34,211,238; } .nav:nth-child(2) { --nc:167,139,250; } .nav:nth-child(3) { --nc:251,191,36; } .nav:nth-child(4) { --nc:52,211,153; }
-  .nav svg { width:44px; height:44px; color:rgb(var(--nc)); filter:drop-shadow(0 0 10px rgba(var(--nc),.9)); transition:.25s; }
-  .nav:hover { border-color:rgba(var(--nc),.8); background:rgba(var(--nc),.12); transform:translateX(4px); }
-  .nav:hover svg { transform:scale(1.15) rotate(-6deg); }
-  .nav.active { color:#fff; background:linear-gradient(160deg,rgba(var(--nc),.38),rgba(10,20,70,.6)); border-color:rgb(var(--nc)); box-shadow:0 0 26px rgba(var(--nc),.65), inset 0 0 20px rgba(var(--nc),.25); }
-  .nav.active svg { color:#fff; }
+  /* Thống kê */
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:14px; }
+  .stat { padding:14px 16px; }
+  .stat .k { font-size:12px; color:var(--muted); }
+  .stat .v { font-family:var(--mono); font-size:25px; font-weight:700; margin-top:4px; }
+  .stat .v small { font-size:13px; color:var(--muted); font-weight:500; }
 
-  /* Thẻ nhiệt độ / gas */
-  .vcard { display:flex; align-items:center; gap:16px; overflow:hidden; --n1:#fff1b0; --n2:#ff8a1f; }
-  .tcard { grid-area:t; --cc:34,230,120; --n1:#eafff1; --n2:#2bff8a; }
-  .tcard.alarm { --cc:255,70,40; --n1:#fff4b0; --n2:#ff5a12; }
-  .gcard { grid-area:g; --cc:30,170,255; --n1:#e6fbff; --n2:#12b5ff; }
-  .tcard, .gcard { background:linear-gradient(150deg,rgba(var(--cc),.34),rgba(10,10,40,.9) 62%);
-                   box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 18px 44px rgba(0,0,0,.5), 0 0 42px rgba(var(--cc),.55), inset 0 0 50px rgba(var(--cc),.2); }
-  .vicon { flex:none; width:128px; position:relative; }
-  .vicon svg { width:100%; height:auto; display:block; filter:drop-shadow(0 0 14px rgba(var(--cc),.8)); animation:floaty 3.2s ease-in-out infinite; }
-  .gcard .vicon svg { animation-delay:-1.2s; }
-  .vbody { min-width:0; flex:1; position:relative; }
-  .vtitle { display:flex; align-items:center; gap:10px; font-size:25px; font-weight:700; text-shadow:0 0 14px rgba(var(--cc),.8); white-space:nowrap; }
-  .vtitle svg { width:26px; height:26px; flex:none; }
-  .tcard .vtitle svg { color:#ff5a4d; } .gcard .vtitle svg { color:#4db0ff; }
-  .big { font-family:var(--num); font-weight:800; line-height:1.05; margin:6px 0 10px; font-size:72px; letter-spacing:-1px; white-space:nowrap;
-         background-image:linear-gradient(180deg,var(--n1),var(--n2)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;
-         filter:drop-shadow(0 0 20px rgba(var(--cc),.75)); }
-  .big small { font-family:var(--ui); font-size:26px; font-weight:800; margin-left:8px; letter-spacing:0; }
-  .tcard.alarm .big, body[data-state="fire"] .gcard .big { animation:numPulse 1s ease-in-out infinite; }
-  .badge { display:inline-flex; align-items:center; gap:9px; padding:8px 18px; border-radius:999px; font-size:15.5px; font-weight:800; text-transform:uppercase; white-space:nowrap; }
-  .badge .bi { width:28px; height:28px; flex:none; }
-  .badge.bad { border:2px solid rgb(var(--cc)); color:#fff; animation:badgeP 1.1s ease-in-out infinite;
-               background:linear-gradient(90deg,rgba(var(--cc),.35),rgba(30,6,14,.8)); box-shadow:0 0 18px rgba(var(--cc),.55), inset 0 0 14px rgba(var(--cc),.3); }
-  .badge.good { border:2px solid #22c55e; color:#b6ffd1; background:linear-gradient(90deg,rgba(34,197,94,.35),rgba(4,30,18,.8)); box-shadow:0 0 22px rgba(34,255,130,.55); }
-  .meter { position:relative; height:12px; border-radius:99px; margin:14px 0 5px; overflow:hidden;
-           background:linear-gradient(90deg,#22e07a 0,#9be02a 35%,#ffc21a 58%,#ff3b30 100%); box-shadow:0 0 16px rgba(var(--cc),.55), inset 0 0 0 1px rgba(255,255,255,.28); }
-  .meter i { position:absolute; right:0; top:0; bottom:0; width:100%; background:rgba(6,10,30,.84); transition:width .9s cubic-bezier(.3,1.25,.4,1); }
-  .meter b { position:absolute; top:0; bottom:0; width:3px; margin-left:-1px; background:#fff; box-shadow:0 0 8px #fff, 0 0 14px #fff; border-radius:2px; z-index:2; }
-  .mlab { display:flex; justify-content:space-between; font-size:12.5px; color:#b9cdf0; }
-  .smoke { position:absolute; inset:0; pointer-events:none; opacity:.45; transition:opacity .5s; }
-  body[data-state="fire"] .smoke, body[data-state="warn"] .smoke { opacity:1; }
-  .smoke i { position:absolute; border-radius:50%; background:radial-gradient(circle,rgba(60,190,255,.6),transparent 70%); filter:blur(10px); animation:drift 5s ease-in-out infinite alternate; }
+  .charts { display:grid; grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); gap:14px; margin-bottom:14px; }
+  .chart { height:250px; position:relative; }
 
-  /* Biểu đồ nhỏ */
-  .charts { grid-area:c; display:flex; flex-direction:column; gap:12px; }
-  .cpanel { flex:1; min-height:0; padding:10px 14px 8px; display:flex; flex-direction:column; box-shadow:0 0 26px rgba(var(--cc),.35); background:linear-gradient(160deg,rgba(18,30,78,.88),rgba(6,10,36,.9)); }
-  .cpanel.ct { --cc:255,150,30; } .cpanel.cg { --cc:34,200,255; }
-  .cpanel h3 { margin:0 0 2px; font-size:16.5px; font-weight:700; display:flex; align-items:center; gap:8px; }
-  .cpanel.ct h3 { color:#ffd9a0; } .cpanel.cg h3 { color:#b8eeff; }
-  .cpanel h3 svg { width:20px; height:20px; }
-  .cpanel .cv { position:absolute; top:9px; right:14px; padding:3px 13px; border-radius:10px; font-family:var(--num); font-weight:800; font-size:13px; letter-spacing:.5px; color:#fff; z-index:3; }
-  .cpanel.ct .cv { background:linear-gradient(90deg,#ff3b30,#ff8a00); box-shadow:0 0 16px rgba(255,100,20,.9); }
-  .cpanel.cg .cv { background:linear-gradient(90deg,#1f6bff,#18d4ff); box-shadow:0 0 16px rgba(30,180,255,.9); }
-  .cwrap { position:relative; flex:1; min-height:0; }
-  .cwrap canvas, .bigchart canvas { position:absolute; left:0; top:0; display:block; }
-
-  /* Cảnh khẩn cấp */
-  .scene { grid-area:sc; position:relative; z-index:3; display:grid; align-items:end; grid-template-columns:300px minmax(0,1fr) 400px; }
-  .fighter { width:300px; margin-right:-40px; position:relative; z-index:4; align-self:end; filter:drop-shadow(0 8px 14px rgba(0,0,0,.55)); }
-  .fighter .pose { transform-origin:50% 100%; }
-  body[data-state="fire"] .fighter .pose, body[data-state="warn"] .fighter .pose { animation:wag .5s ease-in-out infinite; }
-  .house { width:430px; margin-left:-30px; align-self:end; filter:drop-shadow(0 0 22px rgba(255,90,0,.30)); }
-  .on-alarm { display:none; }
-  body[data-state="fire"] .on-alarm, body[data-state="warn"] .on-alarm { display:inline; }
-  body[data-state="fire"] .on-ok, body[data-state="warn"] .on-ok { display:none; }
-  .waves path { opacity:0; animation:wave 1s ease-in-out infinite; } .waves path:nth-child(2) { animation-delay:.2s; } .waves path:nth-child(3) { animation-delay:.4s; }
-  body[data-state="fire"] .waves path, body[data-state="warn"] .waves path { opacity:1; }
-  .fl { transform-box:fill-box; transform-origin:50% 100%; opacity:0; animation:flick .45s ease-in-out infinite alternate; }
-  body[data-state="fire"] .fl { opacity:1; } body[data-state="warn"] .fl { opacity:.8; }
-  .smk { opacity:0; } body[data-state="fire"] .smk, body[data-state="warn"] .smk { opacity:1; }
-  .smk circle { transform-box:fill-box; transform-origin:50% 100%; animation:smoke 4s ease-out infinite; }
-  .win { transition:fill .4s; }
-  body[data-state="ok"] .win, body[data-state="off"] .win { fill:#6f6045; filter:none !important; }
-  .lt.a { fill:#ff3b30; animation:lt .5s steps(2) infinite; } .lt.b { fill:#2f8cff; animation:lt .5s steps(2) infinite reverse; }
-  body[data-state="ok"] .lt, body[data-state="off"] .lt { animation:none; opacity:.5; }
-
-  .banner { position:relative; align-self:center; margin-top:18px; filter:drop-shadow(0 0 22px var(--bn-a)); transition:filter .3s; }
-  body[data-state="fire"] .banner { animation:bannerPulse 1s ease-in-out infinite; }
-  .siren { position:absolute; left:50%; top:-46px; width:92px; height:78px; transform:translateX(-50%); z-index:5; }
-  .siren svg { width:100%; height:100%; overflow:visible; }
-  .siren .dome { fill:var(--siren); } .siren .halo { fill:var(--siren); opacity:.55; transform-origin:46px 48px; }
-  body[data-state="fire"] .siren .halo, body[data-state="warn"] .siren .halo { animation:halo .8s ease-in-out infinite alternate; }
-  .beams { position:absolute; left:50%; top:-150px; width:620px; height:620px; margin-left:-310px; border-radius:50%; pointer-events:none; z-index:0; opacity:0; transition:opacity .4s; mix-blend-mode:screen;
-           background:conic-gradient(from 0deg, color-mix(in srgb,var(--siren) 55%,transparent) 0, transparent 14%, transparent 50%, color-mix(in srgb,var(--siren) 55%,transparent) 50%, transparent 64%);
-           -webkit-mask-image:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 38%,transparent 72%); mask-image:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 38%,transparent 72%); animation:spin2 1.5s linear infinite; }
-  body[data-state="fire"] .beams { opacity:1; } body[data-state="warn"] .beams { opacity:.7; }
-  .bn { position:relative; z-index:1; padding:3px; clip-path:polygon(22px 0,calc(100% - 22px) 0,100% 22px,100% calc(100% - 22px),calc(100% - 22px) 100%,22px 100%,0 calc(100% - 22px),0 22px);
-        background-image:linear-gradient(90deg,var(--bn-a),var(--bn-b),#fff,var(--bn-b),var(--bn-a)); background-size:300% 100%; animation:shim 2.4s linear infinite reverse; }
-  .bn-in { position:relative; padding:34px 70px 16px; text-align:center; overflow:hidden;
-           clip-path:polygon(20px 0,calc(100% - 20px) 0,100% 20px,100% calc(100% - 20px),calc(100% - 20px) 100%,20px 100%,0 calc(100% - 20px),0 20px);
-           background:radial-gradient(500px 120px at 50% 0, color-mix(in srgb,var(--bn-a) 30%,transparent), transparent 70%), linear-gradient(180deg,var(--bn-in1),var(--bn-in2)); }
-  .bn-in::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.26) 50%,transparent 62%); background-size:250% 100%; animation:shine 2.8s linear infinite; }
-  .hazard { position:absolute; left:0; right:0; top:0; height:18px; background:var(--hz); }
-  body[data-state="fire"] .hazard, body[data-state="warn"] .hazard { animation:hzmove 1s linear infinite; background-size:40px 40px; }
-  .btitle { display:flex; align-items:center; justify-content:center; gap:16px; font-size:40px; font-weight:900; font-style:italic; text-transform:uppercase; line-height:1.15; white-space:nowrap; filter:drop-shadow(0 0 14px var(--bn-a)); }
-  .btitle span { background-image:linear-gradient(180deg,#fff,#ffd5c8 45%,var(--bn-b)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
-  .btitle svg { width:46px; height:46px; flex:none; }
-  .bmsg { position:relative; margin-top:8px; padding:9px 18px; border-radius:18px; border:2px solid var(--bn-a); background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.25)); box-shadow:inset 0 0 22px color-mix(in srgb,var(--bn-a) 35%,transparent); }
-  .bmsg .m1 { font-size:21px; font-weight:700; } .bmsg .m2 { font-size:21px; font-weight:800; color:var(--m2c); text-transform:uppercase; margin-top:1px; }
-  .chev { position:absolute; bottom:28px; width:44px; height:44px; color:var(--bn-a); filter:drop-shadow(0 0 10px var(--bn-a)); }
-  .chev.l { left:14px; } .chev.r { right:14px; }
-  body[data-state="fire"] .chev, body[data-state="warn"] .chev { animation:chev .9s ease-in-out infinite alternate; }
-
-  /* Hàng dưới */
-  .bottom { grid-area:bt; display:grid; gap:14px; grid-template-columns:1.2fr 1.5fr 1fr; position:relative; z-index:3; }
-  .bottom .card { display:flex; align-items:center; gap:18px; overflow:hidden; }
-  .sstat { --cc:34,255,130; background:linear-gradient(150deg,rgba(34,255,130,.22),rgba(6,18,30,.9) 60%); }
-  body[data-state="off"] .sstat { --cc:120,135,160; background:linear-gradient(150deg,rgba(120,135,160,.2),rgba(10,16,30,.9) 60%); }
-  .shield { width:112px; flex:none; filter:drop-shadow(0 0 14px rgba(34,197,94,.7)); animation:shieldP 1.8s ease-in-out infinite; }
-  body[data-state="off"] .shield { filter:grayscale(1) opacity(.7); animation:none; }
-  .sbody { position:relative; z-index:3; min-width:0; }
-  .k { font-size:19px; font-weight:600; color:#e5eeff; }
-  .sv { font-size:38px; font-weight:900; font-style:italic; line-height:1.15; margin:3px 0; text-transform:uppercase; white-space:nowrap;
-        background-image:linear-gradient(180deg,#eafff2,#22ff88); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; filter:drop-shadow(0 0 14px rgba(34,255,130,.85)); }
-  body[data-state="off"] .sv { background-image:linear-gradient(180deg,#e2e8f0,#94a3b8); filter:none; }
-  .ss { font-size:16.5px; color:#dbe6fb; }
-  .spark { position:absolute; right:10px; bottom:8px; width:40%; height:44%; opacity:.9; pointer-events:none; z-index:2; }
-  .spark polyline { fill:none; stroke:#22c55e; stroke-width:2.4; stroke-linejoin:round; stroke-linecap:round; filter:drop-shadow(0 0 5px #22c55e); }
-  body[data-state="off"] .spark polyline { stroke:#94a3b8; filter:none; }
-
-  .acard { --cc:255,59,100; background:linear-gradient(150deg,rgba(255,59,100,.22),rgba(20,6,26,.9) 60%); }
-  body[data-state="ok"] .acard, body[data-state="off"] .acard { --cc:90,140,255; background:linear-gradient(150deg,rgba(90,140,255,.18),rgba(10,10,34,.9) 60%); }
-  .acol { flex:1; min-width:0; }
-  .ahead { display:flex; align-items:center; gap:12px; font-size:23px; font-weight:700; margin-bottom:12px; }
-  .ahead svg { width:34px; height:34px; color:#ff4d4d; flex:none; filter:drop-shadow(0 0 8px rgba(255,59,48,.8)); }
-  body[data-state="fire"] .ahead svg, body[data-state="warn"] .ahead svg { animation:bellRing 1.1s ease-in-out infinite; transform-origin:50% 8%; }
-  .aline { font-size:21px; font-weight:600; } .aline .red { color:#ff3b3b; text-shadow:0 0 10px rgba(255,59,48,.55); font-weight:800; } .aline .gr { color:#7ef0a6; }
-  .asub { margin-top:8px; font-size:19px; color:#e6eefc; } .asub .sep { margin:0 12px; opacity:.6; }
+  ul.log { list-style:none; margin:0; padding:0; max-height:240px; overflow:auto; font-size:14px; }
+  ul.log li { display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px solid var(--line); }
+  ul.log li:last-child { border:0; }
+  ul.log .d { width:9px; height:9px; border-radius:50%; flex:none; }
+  ul.log .t { margin-left:auto; font-family:var(--mono); font-size:12.5px; color:var(--muted); }
   .muted { color:var(--muted); }
 
-  .qcard { --cc:255,170,0; flex-direction:column; align-items:stretch !important; justify-content:center; gap:6px !important; background:linear-gradient(150deg,rgba(255,170,0,.20),rgba(22,12,30,.9) 60%); }
-  .qh { display:flex; align-items:center; gap:10px; font-size:19px; font-weight:700; } .qh svg { width:24px; height:24px; color:#ffc21a; }
-  .qrow { display:flex; justify-content:space-around; gap:8px; }
-  .qa { --q:#ff3b30; appearance:none; border:0; background:none; color:#fff; font:inherit; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:7px; font-weight:700; font-size:15.5px; transition:transform .15s; }
-  .qa:nth-child(2) { --q:#2f8cff; } .qa:nth-child(3) { --q:#ff9d00; }
-  .qa:hover { transform:translateY(-4px); }
-  .qa .ring { position:relative; width:70px; height:70px; border-radius:50%; display:grid; place-items:center; border:3px solid var(--q); color:#fff;
-              background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--q) 55%,#fff 10%),color-mix(in srgb,var(--q) 20%,#000)); box-shadow:0 0 24px var(--q), inset 0 0 18px color-mix(in srgb,var(--q) 60%,transparent); }
-  .qa .ring::after { content:""; position:absolute; inset:-3px; border-radius:50%; border:2px solid var(--q); animation:ringP 1.8s ease-out infinite; }
-  .qa:nth-child(2) .ring::after { animation-delay:.5s; } .qa:nth-child(3) .ring::after { animation-delay:1s; }
-  .qa .ring svg { width:34px; height:34px; } .qa.active .ring { background:var(--q); color:#0a0a14; }
+  footer { text-align:center; font-size:12.5px; color:var(--muted); padding:14px 0 6px; line-height:1.7; }
+  .pill { display:inline-block; padding:2px 10px; border-radius:999px; border:1px solid var(--line); margin:0 3px; }
+  .pill.on { color:var(--ok); border-color:var(--ok); }
 
-  /* Thanh cảnh báo trên cùng + cửa sổ phụ + toast */
-  .alertbar { position:fixed; top:14px; left:50%; transform:translate(-50%,-140%); z-index:150; display:none; align-items:center; gap:16px; padding:12px 18px 12px 22px; border-radius:18px; max-width:min(720px,94vw);
-              background:linear-gradient(90deg,#8a0f1c,#ff3b30); border:2px solid #ffb3a8; box-shadow:0 0 40px rgba(255,59,48,.8), 0 14px 40px rgba(0,0,0,.6); }
-  .alertbar.show { display:flex; animation:drop .5s cubic-bezier(.2,.9,.3,1) forwards; }
-  .alertbar.warnc { background:linear-gradient(90deg,#8a4a05,#f59e0b); border-color:#ffe0a0; box-shadow:0 0 40px rgba(245,158,11,.8), 0 14px 40px rgba(0,0,0,.6); }
-  .alertbar svg { width:36px; height:36px; flex:none; } .alertbar .tt { font-weight:900; font-size:18px; } .alertbar .st { font-size:14px; opacity:.95; }
-  .alertbar button { appearance:none; font:inherit; font-weight:700; font-size:14px; color:#fff; background:rgba(0,0,0,.35); border:1.5px solid rgba(255,255,255,.6); border-radius:999px; padding:8px 16px; cursor:pointer; white-space:nowrap; }
-  .alertbar button:hover { background:rgba(0,0,0,.55); }
-  .modal { position:fixed; inset:0; z-index:100; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(2,6,20,.72); backdrop-filter:blur(4px); }
-  .modal.show { display:flex; }
-  .mbox { position:relative; width:min(900px,100%); max-height:90vh; overflow:auto; padding:22px 24px; border-radius:22px; background:linear-gradient(160deg,#0e1a3e,#050b22); border:1.5px solid rgba(56,130,255,.6); box-shadow:0 0 40px rgba(40,110,255,.35); }
-  .mbox h3 { margin:0 0 14px; font-size:22px; }
-  .mx { position:absolute; top:12px; right:14px; appearance:none; border:1px solid rgba(120,150,220,.4); background:transparent; color:#fff; border-radius:999px; width:34px; height:34px; cursor:pointer; font-size:16px; }
-  .mgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-bottom:6px; }
-  .mstat { padding:12px 14px; border-radius:14px; border:1px solid rgba(80,120,200,.35); background:rgba(10,20,50,.6); }
-  .mstat .a { font-size:12.5px; color:var(--muted); } .mstat .b { font-family:var(--num); font-size:21px; font-weight:700; margin-top:3px; }
-  .mrow { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid rgba(80,120,200,.25); }
-  .mnote { margin-top:12px; font-size:13px; color:var(--muted); line-height:1.6; }
-  .sw { appearance:none; border:1.5px solid rgba(120,150,220,.5); background:rgba(10,20,50,.8); color:#fff; border-radius:999px; padding:8px 18px; cursor:pointer; font:inherit; font-size:14px; white-space:nowrap; }
-  .sw.on { border-color:#22c55e; color:#7ef0a6; box-shadow:0 0 12px rgba(34,197,94,.45); }
-  .bigchart { position:relative; height:230px; margin:8px 0 14px; }
-  .mk { font-weight:700; font-size:15px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
-  ul.log { list-style:none; margin:0; padding:0; max-height:200px; overflow:auto; font-size:14px; }
-  ul.log li { display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px solid rgba(80,120,200,.25); }
-  ul.log .d { width:9px; height:9px; border-radius:50%; flex:none; } ul.log .t { margin-left:auto; font-family:var(--mono); font-size:12.5px; color:var(--muted); }
-  .toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%,30px); opacity:0; z-index:220; padding:12px 22px; border-radius:999px; font-size:14.5px; font-weight:600;
-           background:#0e1a3e; border:1.5px solid #3b8cff; box-shadow:0 0 24px rgba(56,140,255,.5); transition:.3s; pointer-events:none; max-width:92vw; text-align:center; }
-  .toast.show { opacity:1; transform:translate(-50%,0); } .toast.err { border-color:#ff6b6b; box-shadow:0 0 24px rgba(255,80,80,.5); }
-
-  /* ===== Màn hình nhỏ: xếp dọc ===== */
-  @media (max-width:1099px) {
-    .wrap { padding:10px 12px 18px; }
-    .top { height:auto; } h1 { font-size:clamp(22px,4.6vw,38px); white-space:normal; } .tagline { font-size:15px; }
-    .layout { grid-template-columns:1fr 1fr; grid-template-rows:auto; grid-template-areas:"side side" "t g" "c c" "sc sc" "bt bt"; }
-    .side { flex-direction:row; padding:8px; } .nav { flex:1; padding:8px 2px; font-size:13px; } .nav svg { width:32px; height:32px; }
-    .charts { flex-direction:row; } .cpanel { height:190px; flex:1; }
-    .scene { grid-template-columns:1fr; } .fighter, .house { display:none; } .banner { margin-top:56px; }
-    .bottom { grid-template-columns:1fr 1fr; } .bottom .qcard { grid-column:1 / -1; }
-    .vcard { flex-wrap:wrap; justify-content:center; } .big { font-size:clamp(40px,8vw,64px); }
-    .iconbtn { width:44px; height:44px; }
+  @media (max-width:560px) {
+    .charts { grid-template-columns:1fr; }
+    .hero { flex-direction:column; text-align:center; padding:18px; }
+    .hero .chips { justify-content:center; }
   }
-  @media (max-width:700px) {
-    .layout { grid-template-columns:1fr; grid-template-areas:"side" "t" "g" "c" "sc" "bt"; }
-    .charts { flex-direction:column; } .bottom { grid-template-columns:1fr; }
-    .tagline svg.hb { display:none; } .logo { width:56px; height:52px; } .pill { padding:7px 12px; font-size:13px; } .pill svg { width:24px; height:24px; } .clock .t { font-size:19px; }
-    .btitle { font-size:clamp(17px,5.6vw,28px); gap:8px; white-space:normal; } .btitle svg { width:30px; height:30px; }
-    .bn-in { padding:30px 38px 14px; } .bmsg .m1, .bmsg .m2 { font-size:14.5px; } .chev { width:26px; height:26px; bottom:22px; } .chev.l { left:6px; } .chev.r { right:6px; }
-    .vtitle { font-size:20px; } .sv { font-size:28px; } .acard .ahead { font-size:19px; } .aline { font-size:16px; } .asub { font-size:15px; }
-    .alertbar { flex-wrap:wrap; }
-  }
-  @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; } }
 </style>
 </head>
 <body data-state="off">
 <div class="alarm-frame"></div>
-<div class="fire-bg" id="fireBg"></div>
-<div class="cursor-glow" id="cg"></div>
+<div class="wrap">
 
-<!-- Sprite: gradient + biểu tượng dùng chung -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff3d00"/><stop offset=".55" stop-color="#ff9d00"/><stop offset="1" stop-color="#ffe066"/></linearGradient>
-    <linearGradient id="fg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb21f"/><stop offset="1" stop-color="#fff6b0"/></linearGradient>
-    <linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd54a"/><stop offset="1" stop-color="#ff3d00"/></linearGradient>
-    <linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6a4d"/><stop offset="1" stop-color="#a30f1c"/></linearGradient>
-    <linearGradient id="mercG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6a5a"/><stop offset="1" stop-color="#d81010"/></linearGradient>
-    <linearGradient id="gasG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0b4fd6"/><stop offset=".45" stop-color="#3b9bff"/><stop offset="1" stop-color="#0a3fb0"/></linearGradient>
-    <linearGradient id="gJ" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5a52"/><stop offset="1" stop-color="#b3121b"/></linearGradient>
-    <linearGradient id="gH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6a60"/><stop offset="1" stop-color="#c4161d"/></linearGradient>
-    <linearGradient id="gSkin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe3c8"/><stop offset="1" stop-color="#f3b184"/></linearGradient>
-    <linearGradient id="gMega" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c7cfdf"/></linearGradient>
-    <linearGradient id="gTruck" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff4d4d"/><stop offset="1" stop-color="#a30f18"/></linearGradient>
-    <linearGradient id="gWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7d5440"/><stop offset="1" stop-color="#4f3226"/></linearGradient>
-    <linearGradient id="gRoof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2d4d"/><stop offset="1" stop-color="#211830"/></linearGradient>
-    <linearGradient id="gGround" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1036" stop-opacity="0"/><stop offset="1" stop-color="#150d2b" stop-opacity=".95"/></linearGradient>
-    <radialGradient id="gSmk" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#8a8fa8" stop-opacity=".9"/><stop offset="1" stop-color="#8a8fa8" stop-opacity="0"/></radialGradient>
-    <symbol id="flm" viewBox="0 0 40 60"><path d="M20 58C6 58 2 44 10 32c2 6 5 8 7 8-3-12 1-26 9-38 2 14 14 24 12 40-1 10-8 16-18 16Z" fill="url(#fg)"/><path d="M20 58c-7 0-9-8-5-14 1 3 3 4 4 4-1-6 1-11 5-16 1 7 7 12 6 19-1 5-5 7-10 7Z" fill="url(#fg2)" opacity=".9"/></symbol>
-    <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 2 1 21h22Z" fill="#ffc21a" stroke="#fff" stroke-opacity=".5" stroke-linejoin="round"/><rect x="11" y="8.5" width="2" height="6.5" rx="1" fill="#3a1500"/><circle cx="12" cy="18" r="1.3" fill="#3a1500"/></symbol>
-    <symbol id="i-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#22c55e"/><path d="m7 12.5 3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  </defs>
-</svg>
-
-<div class="boot" id="boot">
-  <div>
-    <svg viewBox="0 0 120 110" aria-hidden="true"><path d="M44 6c2 16-8 24-16 34-8 9-14 18-14 32 0 20 16 34 34 34-14-6-22-18-20-32 1-8 6-12 10-18 5-7 10-14 6-30Z" fill="url(#lg1)"/><path d="M70 12 100 24v28c0 22-14 38-30 46C54 90 40 74 40 52V24Z" fill="url(#lg2)" stroke="#ffb3a0" stroke-width="2.5" stroke-linejoin="round"/><path d="m56 54 10 10 18-20" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <div class="tx">Đang khởi động hệ thống</div>
-    <div class="bar"><i></i></div>
-  </div>
-</div>
-
-<div class="alertbar" id="alertbar" role="alert">
-  <svg viewBox="0 0 24 24"><use href="#i-warn"/></svg>
-  <div style="min-width:0"><div class="tt" id="abT">BÁO CHÁY!</div><div class="st" id="abS"></div></div>
-  <button type="button" id="abAck">Đã biết</button>
-  <button type="button" id="abClose" aria-label="Đóng">✕</button>
-</div>
-
-<div class="wrap" id="root">
-
-  <header class="top">
+  <header>
     <div class="brand">
-      <svg class="logo" viewBox="0 0 120 110" aria-hidden="true">
-        <path d="M44 6c2 16-8 24-16 34-8 9-14 18-14 32 0 20 16 34 34 34-14-6-22-18-20-32 1-8 6-12 10-18 5-7 10-14 6-30Z" fill="url(#lg1)"/>
-        <path d="M30 60c-6 8-8 16-4 26 3 8 10 14 18 16-10-8-12-20-6-30 2-4 2-8-8-12Z" fill="#ff7a1a" opacity=".8"/>
-        <path d="M70 12 100 24v28c0 22-14 38-30 46C54 90 40 74 40 52V24Z" fill="url(#lg2)" stroke="#ffb3a0" stroke-width="2.5" stroke-linejoin="round"/>
-        <path d="M70 26 88 33v19c0 14-8 25-18 31C60 77 52 66 52 52V33Z" fill="#7a0a14" opacity=".55"/>
-        <path d="M70 34c3 8-4 11-4 18 0 5 3 8 6 8s6-3 6-7c0-4-2-6-3-8-1 2-2 3-4 3 2-6 1-10-1-14Z" fill="#ffd54a"/>
-      </svg>
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2c.6 3.2-1.1 4.7-2.6 6.4C8 10 7 11.4 7 13.6A5 5 0 0 0 12 19a5 5 0 0 0 5-5.1c0-2-1-3.3-1.9-4.4-.6.9-1.3 1.4-2.1 1.5.9-3.4.1-6.2-1-9Zm0 20a7 7 0 0 1-7-7c0-1.2.4-2.3 1-3.2.2 1.1.8 1.8 1.6 2.2C7.3 9.6 9.6 6.8 12 2c.4 2.2 1.1 3.6 2.4 5.2C16.4 9.6 19 11.6 19 15a7 7 0 0 1-7 7Z" opacity=".95"/></svg>
+      </div>
       <div style="min-width:0">
-        <h1>Hệ thống <span class="red">báo cháy</span> thông minh</h1>
-        <div class="tagline">
-          <i>An toàn hôm nay – Bình yên ngày mai</i>
-          <svg class="hb" viewBox="0 0 92 24"><polyline points="0,12 28,12 36,12 42,3 50,21 56,12 92,12" fill="none" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="filter:drop-shadow(0 0 4px #ff3b30)"/></svg>
-          <svg class="sh" viewBox="0 0 30 30"><path d="M15 2 26 6v8c0 7-5 12-11 14C9 26 4 21 4 14V6Z" fill="#46506a" stroke="#9aa6c2" stroke-width="1.5"/><path d="m10 14.5 3.5 3.5L20 11" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
+        <h1 id="ptitle"></h1>
+        <div class="sub">Giám sát nhiệt độ và khí gas theo thời gian thực</div>
       </div>
     </div>
-    <div class="hright">
-      <div class="pill conn off" id="connPill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M2 9a15 15 0 0 1 20 0"/><path d="M5.5 12.8a10 10 0 0 1 13 0"/><path d="M9 16.5a5 5 0 0 1 6 0"/><circle cx="12" cy="20" r="1.2" fill="currentColor"/></svg>
-        <span>Kết nối: <b id="connText">Offline</b></span>
-      </div>
-      <div class="pill clock">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2.5"/></svg>
-        <div><div class="t" id="clkT">--:--:--</div><div class="d" id="clkD">--/--/----</div></div>
-      </div>
-      <button class="iconbtn" id="fsBtn" type="button" title="Toàn màn hình" aria-label="Toàn màn hình">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
-      </button>
+    <div class="tools">
+      <div class="conn"><span class="dot" id="dot"></span><span id="connText">Đang chờ dữ liệu…</span></div>
+      <button class="btn" id="soundBtn" type="button">🔇 Còi web: tắt</button>
+      <button class="btn" id="themeBtn" type="button">🌙 Tối</button>
     </div>
   </header>
 
-  <div class="layout">
-
-    <nav class="side" aria-label="Điều hướng">
-      <button class="nav active" type="button" id="navHome"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3Z"/></svg>Trang chủ</button>
-      <button class="nav" type="button" id="navChart"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="12" width="5" height="9" rx="1.2"/><rect x="9.5" y="6" width="5" height="15" rx="1.2"/><rect x="16" y="9" width="5" height="12" rx="1.2"/></svg>Biểu đồ</button>
-      <button class="nav" type="button" id="navSet"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="3.6" stroke-dasharray="3.2 3.2"/><circle cx="12" cy="12" r="6.6" fill="currentColor"/><circle cx="12" cy="12" r="2.6" fill="#0a1432"/></svg>Cài đặt</button>
-      <button class="nav" type="button" id="navInfo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/><rect x="11" y="10.5" width="2" height="7" rx="1" fill="#0a1432"/><circle cx="12" cy="7.3" r="1.3" fill="#0a1432"/></svg>Thông tin</button>
-    </nav>
-
-    <!-- Nhiệt độ -->
-    <section class="card vcard tcard" id="tCard">
-      <div class="vicon">
-        <svg viewBox="0 0 100 230" aria-hidden="true">
-          <rect x="36" y="8" width="28" height="170" rx="14" fill="rgba(255,255,255,.10)" stroke="#fff" stroke-opacity=".85" stroke-width="3"/>
-          <circle cx="50" cy="196" r="30" fill="rgba(255,255,255,.10)" stroke="#fff" stroke-opacity=".85" stroke-width="3"/>
-          <circle cx="50" cy="196" r="22" fill="url(#mercG)"/>
-          <rect id="merc" x="44" y="100" width="12" height="90" rx="6" fill="url(#mercG)"/>
-          <g stroke="#fff" stroke-opacity=".8" stroke-width="2.4" stroke-linecap="round"><path d="M70 30h14M70 50h8M70 70h14M70 90h8M70 110h14M70 130h8M70 150h14"/></g>
-          <ellipse cx="42" cy="60" rx="2.4" ry="22" fill="#fff" opacity=".35"/>
-        </svg>
-      </div>
-      <div class="vbody">
-        <div class="vtitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 14V4a2 2 0 0 1 4 0v10a4 4 0 1 1-4 0Z"/><circle cx="12" cy="17" r="1.8" fill="currentColor"/></svg>Nhiệt độ hiện tại</div>
-        <div class="big"><span id="tVal">--</span><small>°C</small></div>
-        <div class="badge good" id="tBadge"></div>
-        <div class="meter"><i id="tCover"></i><b id="tMark"></b></div>
-        <div class="mlab"><span>An toàn</span><span id="tThr"></span></div>
-      </div>
-    </section>
-
-    <!-- Khí gas -->
-    <section class="card vcard gcard" id="gCard">
-      <div class="smoke"><i style="left:6%;top:18%;width:130px;height:130px"></i><i style="left:2%;top:46%;width:100px;height:100px;animation-delay:-1.5s"></i><i style="left:20%;top:2%;width:90px;height:90px;animation-delay:-3s"></i></div>
-      <div class="vicon">
-        <svg viewBox="0 0 120 170" aria-hidden="true">
-          <ellipse cx="60" cy="162" rx="40" ry="6" fill="#000" opacity=".35"/>
-          <path d="M40 26h40v8H40Z" fill="#8fa3c4"/><rect x="52" y="10" width="16" height="18" rx="3" fill="#5f7399"/>
-          <path d="M34 34c-12 10-16 26-16 46v62c0 14 8 20 20 20h44c12 0 20-6 20-20V80c0-20-4-36-16-46Z" fill="url(#gasG)" stroke="#9cd0ff" stroke-width="2"/>
-          <path d="M30 56c12-6 48-6 60 0M26 138c14 6 54 6 68 0" fill="none" stroke="#0a2f8a" stroke-width="3" opacity=".7"/>
-          <path d="M26 44a16 16 0 0 0-8 16" fill="none" stroke="#9cd0ff" stroke-width="3"/>
-          <rect x="30" y="152" width="60" height="10" rx="3" fill="#2a3f6e"/>
-          <ellipse cx="38" cy="95" rx="5" ry="30" fill="#fff" opacity=".25"/>
-          <text x="60" y="108" fill="#fff" font-size="30" font-weight="900" text-anchor="middle" style="font-family:system-ui,sans-serif">GAS</text>
-        </svg>
-      </div>
-      <div class="vbody">
-        <div class="vtitle"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.6 3.2-1.1 4.7-2.6 6.4C8 10 7 11.4 7 13.6A5 5 0 0 0 12 19a5 5 0 0 0 5-5.1c0-2-1-3.3-1.9-4.4-.6.9-1.3 1.4-2.1 1.5.9-3.4.1-6.2-1-9Z"/></svg>Nồng độ khí Ga</div>
-        <div class="big"><span id="gVal">--</span><small id="gUnit">ppm</small></div>
-        <div class="badge good" id="gBadge"></div>
-        <div class="meter"><i id="gCover"></i><b id="gMark"></b></div>
-        <div class="mlab"><span>An toàn</span><span id="gThr"></span></div>
-      </div>
-    </section>
-
-    <!-- Biểu đồ nhỏ -->
-    <div class="charts">
-      <div class="cpanel ct">
-        <h3><svg viewBox="0 0 24 24" fill="none" stroke="#ff5a4d" stroke-width="2.2" stroke-linecap="round"><path d="M10 14V4a2 2 0 0 1 4 0v10a4 4 0 1 1-4 0Z"/></svg>Nhiệt độ (°C)</h3>
-        <div class="cv" id="tChipV">--</div>
-        <div class="cwrap"><canvas id="tchart"></canvas></div>
-      </div>
-      <div class="cpanel cg">
-        <h3><svg viewBox="0 0 24 24" fill="#ffb21f"><path d="M12 2c.6 3.2-1.1 4.7-2.6 6.4C8 10 7 11.4 7 13.6A5 5 0 0 0 12 19a5 5 0 0 0 5-5.1c0-2-1-3.3-1.9-4.4-.6.9-1.3 1.4-2.1 1.5.9-3.4.1-6.2-1-9Z"/></svg><span id="gChartTitle">Khí Ga (ppm)</span></h3>
-        <div class="cv" id="gChipV">--</div>
-        <div class="cwrap"><canvas id="gchart"></canvas></div>
+  <section class="hero" id="hero">
+    <div class="ico" id="hIco">📡</div>
+    <div>
+      <div class="big" id="hBig">Đang chờ dữ liệu</div>
+      <div class="desc" id="hDesc">Chưa nhận được số liệu từ mạch ESP32</div>
+      <div class="chips">
+        <span class="chip" id="chipBuzzer">🔕 Còi tắt</span>
+        <span class="chip" id="chipSource">Nguồn: --</span>
+        <span class="chip" id="chipAge">Cập nhật: --</span>
       </div>
     </div>
+  </section>
 
-    <!-- Cảnh khẩn cấp -->
-    <section class="scene" id="scene">
-      <svg class="fighter" viewBox="0 0 320 340" aria-hidden="true">
-        <ellipse cx="150" cy="334" rx="100" ry="9" fill="#000" opacity=".35"/>
-        <g class="pose">
-          <!-- thân áo -->
-          <path d="M58 334 50 250Q48 198 96 188h88q48 10 46 62l-8 84Z" fill="url(#gJ)" stroke="#5e0a12" stroke-width="3" stroke-linejoin="round"/>
-          <path d="M52 262h176l-1 15H53Z" fill="#ffd23f" stroke="#c99200" stroke-width="1.5"/>
-          <path d="M53 283h174l-1 6H53Z" fill="#dfe6f2"/>
-          <path d="M140 226v108" stroke="#7c0c14" stroke-width="3"/>
-          <path d="M98 188 140 226 182 188Z" fill="#ffd23f" stroke="#c99200" stroke-width="2"/>
-          <rect x="122" y="166" width="36" height="30" fill="url(#gSkin)"/>
-          <!-- tay trái -->
-          <path d="M60 212Q22 252 58 294l38-12Q80 252 100 232Z" fill="url(#gJ)" stroke="#5e0a12" stroke-width="3" stroke-linejoin="round"/>
-          <path d="M34 262l58-15" stroke="#ffd23f" stroke-width="9"/>
-          <circle cx="80" cy="298" r="17" fill="#2a2a2e" stroke="#000" stroke-width="2"/>
-          <!-- đầu -->
-          <circle cx="84" cy="126" r="10" fill="#f3b184"/><circle cx="196" cy="126" r="10" fill="#f3b184"/>
-          <ellipse cx="140" cy="122" rx="56" ry="52" fill="url(#gSkin)" stroke="#c98a5e" stroke-width="2"/>
-          <!-- mũ -->
-          <path d="M76 112C76 46 204 46 204 112Z" fill="url(#gH)" stroke="#5e0a12" stroke-width="3"/>
-          <rect x="134" y="48" width="12" height="62" fill="#b3141c"/>
-          <path d="M66 114Q140 134 214 114L208 100Q140 116 72 100Z" fill="#a8121a" stroke="#5e0a12" stroke-width="2"/>
-          <path d="M140 66l19 7v17q0 13-19 20-19-7-19-20V73Z" fill="#ffd23f" stroke="#b3141c" stroke-width="2.5"/>
-          <path d="M130 84l10 14 10-14" fill="none" stroke="#d81f26" stroke-width="4" stroke-linecap="round"/>
-          <!-- mắt -->
-          <ellipse cx="118" cy="128" rx="10" ry="11" fill="#fff"/><ellipse cx="162" cy="128" rx="10" ry="11" fill="#fff"/>
-          <circle cx="121" cy="130" r="5.5" fill="#3a1f12"/><circle cx="159" cy="130" r="5.5" fill="#3a1f12"/>
-          <circle cx="123" cy="127" r="1.8" fill="#fff"/><circle cx="161" cy="127" r="1.8" fill="#fff"/>
-          <circle cx="104" cy="148" r="8" fill="#ff8f80" opacity=".6"/><circle cx="176" cy="148" r="8" fill="#ff8f80" opacity=".6"/>
-          <!-- biểu cảm: báo động -->
-          <g class="on-alarm">
-            <path d="M102 112l28 12M178 112l-28 12" stroke="#4a2410" stroke-width="6" stroke-linecap="round"/>
-            <path d="M116 150Q140 134 164 150Q160 178 140 178Q120 178 116 150Z" fill="#7a1020"/>
-            <ellipse cx="140" cy="170" rx="11" ry="5.5" fill="#ff6f7f"/>
-          </g>
-          <!-- biểu cảm: bình thường -->
-          <g class="on-ok">
-            <path d="M104 114q14-8 26 0M150 114q14-8 26 0" fill="none" stroke="#4a2410" stroke-width="5" stroke-linecap="round"/>
-            <path d="M118 150Q140 172 162 150" fill="#7a1020" stroke="#5a0c18" stroke-width="3" stroke-linejoin="round"/>
-            <path d="M126 156q14 10 28 0" fill="#ff6f7f"/>
-          </g>
-          <!-- loa -->
-          <path d="M204 120 254 92q12-4 12 8v62q0 12-12 8l-50-26Z" fill="url(#gMega)" stroke="#8791a8" stroke-width="2"/>
-          <path d="M238 96v68" stroke="#d81f26" stroke-width="9"/>
-          <rect x="196" y="126" width="14" height="24" rx="3" fill="#333"/>
-          <ellipse cx="266" cy="130" rx="9" ry="36" fill="#d81f26" stroke="#fff" stroke-width="2"/>
-          <g class="waves" fill="none" stroke="#ffb300" stroke-width="5" stroke-linecap="round"><path d="M282 112q10 18 0 36"/><path d="M294 100q16 30 0 60"/><path d="M306 88q22 42 0 84"/></g>
-          <!-- tay phải -->
-          <path d="M224 206Q258 192 218 152l-20 8Q226 188 200 204Z" fill="url(#gJ)" stroke="#5e0a12" stroke-width="3" stroke-linejoin="round"/>
-          <circle cx="206" cy="152" r="13" fill="#2a2a2e" stroke="#000" stroke-width="2"/>
-        </g>
+  <div class="grid3">
+    <div class="panel gauge">
+      <h2>Nhiệt độ (DHT11)</h2>
+      <svg viewBox="0 0 200 122" id="gT"></svg>
+      <div class="val"><span id="tVal">--</span><small>°C</small></div>
+      <span class="tag" id="tTag">Cờ nhiệt: tắt</span>
+      <div class="hint" id="tHint"></div>
+    </div>
+    <div class="panel gauge">
+      <h2>Khí gas / khói (MQ2)</h2>
+      <svg viewBox="0 0 200 122" id="gG"></svg>
+      <div class="val"><span id="gVal">--</span><small>ADC</small></div>
+      <span class="tag" id="gTag">Cờ gas: tắt</span>
+      <div class="hint" id="gHint"></div>
+    </div>
+    <div class="panel house">
+      <h2>Sơ đồ ngôi nhà</h2>
+      <svg viewBox="0 0 320 200" id="houseSvg" role="img" aria-label="Sơ đồ ngôi nhà với cảm biến đặt ở phòng khách">
+        <polygon points="14,82 160,18 306,82" fill="var(--wall)" stroke="var(--line)" stroke-width="1.5"/>
+        <rect class="room sensor off" id="roomS" x="24" y="82" width="142" height="100" rx="4"/>
+        <rect class="room" x="166" y="82" width="70" height="100" rx="4"/>
+        <rect class="room" x="236" y="82" width="60" height="100" rx="4"/>
+        <text class="rtext" x="95" y="172">Phòng khách (có cảm biến)</text>
+        <text class="rtext" x="201" y="172">Bếp</text>
+        <text class="rtext" x="266" y="172">Phòng ngủ</text>
+        <!-- cảm biến -->
+        <circle cx="95" cy="98" r="5" fill="var(--accent)"/>
+        <circle cx="95" cy="98" r="10" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".6"/>
+        <text class="flame" x="95" y="150" font-size="44" text-anchor="middle">🔥</text>
+        <rect x="52" y="118" width="86" height="8" rx="4" fill="none" stroke="var(--line)" opacity="0"/>
+        <!-- cửa -->
+        <rect x="60" y="150" width="0" height="0"/>
       </svg>
-
-      <div class="banner" id="banner">
-        <div class="beams"></div>
-        <div class="siren">
-          <svg viewBox="0 0 92 78" aria-hidden="true">
-            <circle class="halo" cx="46" cy="48" r="34"/>
-            <rect x="12" y="54" width="68" height="16" rx="4" fill="#3a3f4d"/><rect x="20" y="48" width="52" height="10" rx="3" fill="#232733"/>
-            <path class="dome" d="M20 50a26 26 0 0 1 52 0Z"/>
-            <path d="M28 44a18 18 0 0 1 12-14" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="4" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="bn"><div class="bn-in">
-          <div class="hazard"></div>
-          <svg class="chev l" viewBox="0 0 40 40"><path d="M6 6l14 14L6 34M20 6l14 14-14 14" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <svg class="chev r" viewBox="0 0 40 40"><path d="M6 6l14 14L6 34M20 6l14 14-14 14" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <div class="btitle"><svg viewBox="0 0 24 24"><use href="#i-warn"/></svg><span id="bTitle">MẤT KẾT NỐI</span><svg viewBox="0 0 24 24"><use href="#i-warn"/></svg></div>
-          <div class="bmsg"><div class="m1" id="bMsg1">Không nhận được dữ liệu mới từ mạch ESP32.</div><div class="m2" id="bMsg2">Hãy kiểm tra nguồn và WiFi của mạch</div></div>
-        </div></div>
-      </div>
-
-      <svg class="house" viewBox="0 0 480 270" aria-hidden="true">
-        <rect y="236" width="480" height="34" fill="url(#gGround)"/>
-        <path d="M440 56 472 150H408ZM446 108 480 212H412Z" fill="#0b1a24"/>
-        <path d="M372 92 400 164H344ZM376 132 408 214H344Z" fill="#0b1a24"/>
-        <!-- nhà -->
-        <rect x="46" y="124" width="214" height="118" fill="url(#gWall)"/>
-        <rect x="236" y="164" width="72" height="78" fill="#5a3d30"/>
-        <path d="M228 168 272 134 316 168Z" fill="url(#gRoof)"/>
-        <rect x="216" y="62" width="24" height="46" fill="#4a362c"/><rect x="212" y="58" width="32" height="8" fill="#2a1f30"/>
-        <path d="M22 130 153 52 284 130Z" fill="url(#gRoof)" stroke="#4a3b62" stroke-width="2"/>
-        <g stroke="#150f22" stroke-width="1.5" opacity=".6"><path d="M48 118 153 64 258 118M72 104 153 66M234 104 153 66M96 92h114M120 80h66"/></g>
-        <g class="win" fill="#ffb347" style="filter:drop-shadow(0 0 7px #ff9d00)">
-          <rect x="72" y="142" width="36" height="38" rx="2"/><rect x="132" y="142" width="36" height="38" rx="2"/><rect x="192" y="142" width="36" height="38" rx="2"/>
-          <rect x="72" y="196" width="36" height="38" rx="2"/><rect x="192" y="196" width="36" height="38" rx="2"/><rect x="252" y="184" width="40" height="40" rx="2"/>
-        </g>
-        <g stroke="#2a1a14" stroke-width="3" opacity=".75"><path d="M90 142v38M72 161h36M150 142v38M132 161h36M210 142v38M192 161h36M90 196v38M72 215h36M210 196v38M192 215h36M272 184v40M252 204h40"/></g>
-        <rect x="136" y="196" width="30" height="46" rx="2" fill="#2a1a14"/><circle cx="160" cy="220" r="2" fill="#ffd23f"/>
-        <!-- khói -->
-        <g class="smk">
-          <circle cx="110" cy="70" r="26" fill="url(#gSmk)" style="animation-delay:0s"/><circle cx="170" cy="50" r="30" fill="url(#gSmk)" style="animation-delay:-1.3s"/>
-          <circle cx="226" cy="60" r="24" fill="url(#gSmk)" style="animation-delay:-2.6s"/><circle cx="140" cy="40" r="22" fill="url(#gSmk)" style="animation-delay:-3.3s"/>
-        </g>
-        <!-- lửa -->
-        <use class="fl" href="#flm" x="52" y="14" width="70" height="116" style="animation-delay:0s"/>
-        <use class="fl" href="#flm" x="120" y="40" width="58" height="96" style="animation-delay:-.2s"/>
-        <use class="fl" href="#flm" x="176" y="10" width="76" height="124" style="animation-delay:-.4s"/>
-        <use class="fl" href="#flm" x="236" y="100" width="46" height="74" style="animation-delay:-.15s"/>
-        <use class="fl" href="#flm" x="60" y="150" width="40" height="64" style="animation-delay:-.3s"/>
-        <use class="fl" href="#flm" x="186" y="170" width="46" height="70" style="animation-delay:-.5s"/>
-        <!-- xe cứu hỏa -->
-        <g transform="translate(306 146)">
-          <rect x="0" y="32" width="176" height="64" rx="6" fill="url(#gTruck)" stroke="#5e0a12" stroke-width="2"/>
-          <path d="M0 34h58l12 24v38H0Z" fill="url(#gTruck)" stroke="#5e0a12" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M8 40h42l8 16H8Z" fill="#9fd4ff" opacity=".9"/><path d="M8 40h18l-6 16H8Z" fill="#fff" opacity=".35"/>
-          <rect x="70" y="52" width="106" height="8" fill="#ffd23f"/><rect x="70" y="70" width="106" height="4" fill="#eee" opacity=".85"/>
-          <rect x="84" y="78" width="22" height="14" rx="2" fill="#7a0c14"/><rect x="112" y="78" width="22" height="14" rx="2" fill="#7a0c14"/><rect x="140" y="78" width="22" height="14" rx="2" fill="#7a0c14"/>
-          <path d="M74 30h96M74 22h96" stroke="#c9d0dc" stroke-width="4"/><path d="M84 22v12M110 22v12M136 22v12M162 22v12" stroke="#c9d0dc" stroke-width="3"/>
-          <rect x="8" y="22" width="44" height="9" rx="3" fill="#222"/><rect class="lt a" x="10" y="23" width="18" height="7" rx="2"/><rect class="lt b" x="30" y="23" width="18" height="7" rx="2"/>
-          <circle cx="34" cy="96" r="15" fill="#141414"/><circle cx="34" cy="96" r="7" fill="#aab"/><circle cx="136" cy="96" r="15" fill="#141414"/><circle cx="136" cy="96" r="7" fill="#aab"/>
-        </g>
-      </svg>
-    </section>
-
-    <!-- Hàng dưới -->
-    <section class="bottom">
-      <div class="card sstat">
-        <svg class="shield" viewBox="0 0 100 110" aria-hidden="true">
-          <path d="M50 4 90 18v34c0 26-17 44-40 54C27 96 10 78 10 52V18Z" fill="rgba(34,197,94,.18)" stroke="#2bf07a" stroke-width="5" stroke-linejoin="round"/>
-          <path d="M50 16 78 26v26c0 18-11 31-28 39C33 83 22 70 22 52V26Z" fill="rgba(34,197,94,.25)"/>
-          <path d="m34 54 11 11 22-24" fill="none" stroke="#7dffb0" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 6px #22c55e)"/>
-        </svg>
-        <div class="sbody">
-          <div class="k">Trạng thái hệ thống</div>
-          <div class="sv" id="sVal">MẤT KẾT NỐI</div>
-          <div class="ss" id="sSub">Đang chờ dữ liệu từ ESP32</div>
-        </div>
-        <svg class="spark" viewBox="0 0 200 50" preserveAspectRatio="none"><polyline id="spark" points=""/></svg>
-      </div>
-
-      <div class="card acard">
-        <div class="acol">
-          <div class="ahead"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a6 6 0 0 0-6 6v4l-2 3v1h16v-1l-2-3V8a6 6 0 0 0-6-6Zm-2.2 18a2.2 2.2 0 0 0 4.4 0Z"/></svg>Cảnh báo gần nhất</div>
-          <div class="aline" id="aLine"><span class="muted">Chưa có cảnh báo nào</span></div>
-          <div class="asub" id="aSub"></div>
-        </div>
-      </div>
-
-      <div class="card qcard">
-        <div class="qh"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6Z"/></svg>Hành động nhanh</div>
-        <div class="qrow">
-          <button class="qa" type="button" id="qaSiren"><span class="ring"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a6 6 0 0 0-6 6v4l-2 3v1h16v-1l-2-3V8a6 6 0 0 0-6-6Zm-2.2 18a2.2 2.2 0 0 0 4.4 0Z"/></svg></span><span id="qaSirenT">Bật còi</span></button>
-          <button class="qa" type="button" id="qaFan"><span class="ring"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12C8 9 8 4 12 3c4 1 3 6 0 9Z"/><path transform="rotate(90 12 12)" d="M12 12C8 9 8 4 12 3c4 1 3 6 0 9Z"/><path transform="rotate(180 12 12)" d="M12 12C8 9 8 4 12 3c4 1 3 6 0 9Z"/><path transform="rotate(270 12 12)" d="M12 12C8 9 8 4 12 3c4 1 3 6 0 9Z"/><circle cx="12" cy="12" r="2" fill="#0a0a14"/></svg></span><span id="qaFanT">Bật quạt</span></button>
-          <button class="qa" type="button" id="qaNotify"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="m3 7 9 7 9-7"/></svg></span><span>Gửi thông báo</span></button>
-        </div>
-      </div>
-    </section>
-
+      <div class="legend">Mô hình có 1 bộ cảm biến đặt ở phòng khách. Các phòng còn lại chỉ để minh họa.</div>
+    </div>
   </div>
-</div>
 
-<div class="modal" id="modal"><div class="mbox"><button class="mx" id="mClose" type="button" aria-label="Đóng">✕</button><h3 id="mTitle"></h3><div id="mBody"></div></div></div>
-<div class="toast" id="toast"></div>
+  <div class="stats">
+    <div class="panel stat"><div class="k">Nhiệt độ cao nhất</div><div class="v"><span id="sMax">--</span><small> °C</small></div></div>
+    <div class="panel stat"><div class="k">Nhiệt độ thấp nhất</div><div class="v"><span id="sMin">--</span><small> °C</small></div></div>
+    <div class="panel stat"><div class="k">Gas cao nhất</div><div class="v"><span id="sGas">--</span><small> ADC</small></div></div>
+    <div class="panel stat"><div class="k">Số lần báo động</div><div class="v"><span id="sAlarm">0</span></div></div>
+    <div class="panel stat"><div class="k">Số lần báo cháy</div><div class="v"><span id="sFire">0</span></div></div>
+    <div class="panel stat"><div class="k">Hệ thống chạy được</div><div class="v" style="font-size:20px" id="sUp">--</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="panel"><h2>Nhiệt độ theo thời gian</h2><div class="chart"><canvas id="tchart"></canvas></div></div>
+    <div class="panel"><h2>Gas (ADC) theo thời gian</h2><div class="chart"><canvas id="gchart"></canvas></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Nhật ký đổi trạng thái</h2>
+    <ul class="log" id="log"><li class="muted">Chưa có sự kiện</li></ul>
+  </div>
+
+  <footer>
+    <div><span id="fTeam"></span></div>
+    <div>
+      <span class="pill" id="pTg">📱 Thông báo điện thoại: --</span>
+      <span class="pill">Gas là giá trị ADC, không phải ppm</span>
+    </div>
+  </footer>
+</div>
 
 <script>
 const CFG = {{ cfg|tojson }};
-const GU = CFG.gasUnit || 'ppm';
-const $ = id => document.getElementById(id);
-const COLORS = { ok:'#22c55e', warn:'#f59e0b', danger:'#ff3b30', off:'#64748b' };
-$('gUnit').textContent = GU;
-$('gChartTitle').textContent = 'Khí Ga (' + GU + ')';
+const COLORS = { ok:'#22c55e', warn:'#f59e0b', danger:'#ef4444', off:'#64748b' };
 
-/* ---------- Tự co giãn vừa màn hình (thiết kế 1672 x 941) ---------- */
-const DW = 1672, DH = 941, ROOT = $('root');
-function fit() {
-  const w = document.documentElement.clientWidth, h = document.documentElement.clientHeight;
-  if (w < 1100 || !(window.CSS && CSS.supports && CSS.supports('zoom', '1'))) { ROOT.style.zoom = ''; ROOT.style.width = ''; ROOT.style.minHeight = ''; return; }
-  const s = Math.min(w / DW, h / DH);
-  ROOT.style.zoom = s.toFixed(4); ROOT.style.width = (w / s).toFixed(1) + 'px'; ROOT.style.minHeight = (h / s).toFixed(1) + 'px';
-}
-fit(); addEventListener('resize', fit);
+document.getElementById('ptitle').textContent = CFG.title;
+document.getElementById('fTeam').textContent = CFG.team ? ('Thực hiện: ' + CFG.team) : '';
 
-/* ---------- Lửa nền + tia lửa bay lên ---------- */
-(function () {
-  let h = '';
-  for (let i = 0; i < 34; i++) {
-    const w = 90 + Math.random() * 130, hh = 140 + Math.random() * 230;
-    h += `<i style="--l:${(i * 3.1 - 4 + Math.random() * 3).toFixed(1)}%;--w:${w.toFixed(0)}px;--h:${hh.toFixed(0)}px;--d:${(0.5 + Math.random() * 0.7).toFixed(2)}s;animation-delay:-${(Math.random() * 1.2).toFixed(2)}s"></i>`;
-  }
-  $('fireBg').innerHTML = h;
-  let e = '';
-  for (let i = 0; i < 40; i++) {
-    e += `<i style="left:${(Math.random() * 100).toFixed(1)}%;--s:${(3 + Math.random() * 5).toFixed(1)}px;--d:${(5 + Math.random() * 7).toFixed(1)}s;--x:${(Math.random() * 140 - 70).toFixed(0)}px;animation-delay:-${(Math.random() * 10).toFixed(1)}s"></i>`;
-  }
-  const d = document.createElement('div'); d.className = 'embers'; d.innerHTML = e; document.body.appendChild(d);
-})();
+/* ---------- Lưu tùy chọn người xem (có thể bị chặn nên bọc try/catch) ---------- */
+function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} return null; }
 
-/* ---------- Đồng hồ ---------- */
-function tickClock() {
-  const d = new Date(), p = n => String(n).padStart(2, '0');
-  $('clkT').textContent = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
-  $('clkD').textContent = `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+/* ---------- Giao diện sáng/tối ---------- */
+const themeBtn = document.getElementById('themeBtn');
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  themeBtn.textContent = t === 'dark' ? '🌙 Tối' : '☀️ Sáng';
+  store('theme', t);
+  refreshChartColors();
 }
-tickClock(); setInterval(tickClock, 1000);
+themeBtn.onclick = () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
-/* ---------- Thông báo nhỏ ---------- */
-let toastTimer = null;
-function toast(msg, err) {
-  const t = $('toast'); t.textContent = msg; t.className = 'toast show' + (err ? ' err' : '');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+/* ---------- Đồng hồ đo (gauge) ---------- */
+const NS = 'http://www.w3.org/2000/svg';
+function pt(r, f) { const a = Math.PI * (1 - f); return [100 + r * Math.cos(a), 100 - r * Math.sin(a)]; }
+function arc(r, f0, f1) {
+  const [x0, y0] = pt(r, f0), [x1, y1] = pt(r, f1);
+  return `M${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+}
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function buildGauge(svg, max, off, on, minLabel, maxLabel) {
+  const fo = off / max, fn = on / max;
+  el('path', { d: arc(80, 0, 1), fill: 'none', stroke: 'var(--track)', 'stroke-width': 16, 'stroke-linecap': 'round' }, svg);
+  el('path', { d: arc(80, 0.004, fo), fill: 'none', stroke: COLORS.ok, 'stroke-width': 14, opacity: .9 }, svg);
+  el('path', { d: arc(80, fo, fn), fill: 'none', stroke: COLORS.warn, 'stroke-width': 14, opacity: .9 }, svg);
+  el('path', { d: arc(80, fn, 0.996), fill: 'none', stroke: COLORS.danger, 'stroke-width': 14, opacity: .9 }, svg);
+  const [ax, ay] = pt(66, fn), [bx, by] = pt(94, fn);
+  el('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: 'var(--text)', 'stroke-width': 1.6, opacity: .7 }, svg);
+  const t0 = el('text', { x: 20, y: 117, 'font-size': 9, fill: 'var(--muted)', 'text-anchor': 'middle' }, svg); t0.textContent = minLabel;
+  const t1 = el('text', { x: 180, y: 117, 'font-size': 9, fill: 'var(--muted)', 'text-anchor': 'middle' }, svg); t1.textContent = maxLabel;
+  const needle = el('g', { class: 'needle' }, svg);
+  el('line', { x1: 100, y1: 100, x2: 38, y2: 100, stroke: 'var(--text)', 'stroke-width': 3, 'stroke-linecap': 'round' }, needle);
+  el('circle', { cx: 100, cy: 100, r: 7, fill: 'var(--text)' }, svg);
+  el('circle', { cx: 100, cy: 100, r: 3, fill: 'var(--bg)' }, svg);
+  return needle;
+}
+const TMAX = 60, GMAX = 4095;
+const needleT = buildGauge(document.getElementById('gT'), TMAX, CFG.tempOff, CFG.tempOn, '0°', TMAX + '°');
+const needleG = buildGauge(document.getElementById('gG'), GMAX, CFG.gasOff, CFG.gasOn, '0', '4095');
+function setNeedle(n, v, max) {
+  const f = Math.max(0, Math.min(1, (v || 0) / max));
+  n.style.transform = `rotate(${(f * 180).toFixed(1)}deg)`;
 }
 
-/* ---------- Còi trên trình duyệt ---------- */
-let audio = null, soundOn = false, sirenTimer = null, hi = false, curState = 'off', ackd = false;
-function setSound(on) {
-  soundOn = on;
-  if (on) { try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) { soundOn = false; toast('Trình duyệt không hỗ trợ âm thanh', true); } }
-  $('qaSirenT').textContent = soundOn ? 'Tắt còi' : 'Bật còi';
-  $('qaSiren').classList.toggle('active', soundOn);
-  applySiren();
-}
-function beep(freq) {
-  if (!audio) return;
-  const o = audio.createOscillator(), g = audio.createGain();
-  o.type = 'square'; o.frequency.value = freq; g.gain.value = 0.05;
-  o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + 0.35);
-}
-function applySiren() {
-  const alarm = curState === 'fire' || curState === 'warn';
-  if (soundOn && alarm && !ackd) { if (!sirenTimer) sirenTimer = setInterval(() => { hi = !hi; beep(hi ? 900 : 650); }, 400); }
-  else { clearInterval(sirenTimer); sirenTimer = null; }
-}
-$('qaSiren').onclick = () => setSound(!soundOn);
-
-/* ---------- Lệnh gửi lên server ---------- */
-let fanOn = false;
-async function sendCmd(action, payload) {
-  try {
-    const r = await fetch('/api/control', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ action: action }, payload || {})) });
-    if (!r.ok) throw new Error(r.status);
-    return true;
-  } catch (e) { toast('Server chưa hỗ trợ lệnh này (POST /api/control)', true); return false; }
-}
-$('qaFan').onclick = async () => {
-  const next = !fanOn;
-  if (await sendCmd('fan', { on: next })) { fanOn = next; $('qaFanT').textContent = fanOn ? 'Tắt quạt' : 'Bật quạt'; $('qaFan').classList.toggle('active', fanOn); toast(fanOn ? 'Đã bật quạt' : 'Đã tắt quạt'); }
-};
-$('qaNotify').onclick = async () => { if (await sendCmd('notify')) toast('Đã gửi thông báo'); };
-
-/* ---------- Tiện ích ---------- */
-const fmtTime = ts => new Date(ts * 1000).toLocaleTimeString('vi-VN', { hour12: false });
-function fmtDur(s) {
-  s = Math.floor(s);
-  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
-  if (d) return `${d} ngày ${h} giờ`; if (h) return `${h} giờ ${m} phút`; if (m) return `${m} phút`; return `${s} giây`;
-}
-function stateKind(s) {
-  if (s === 'BAO CHAY!') return 'fire';
-  if (s === 'CANH BAO: NHIET' || s === 'CANH BAO: GAS') return 'warn';
-  return 'ok';
-}
-function fmtGas(v) { return (v === null || v === undefined) ? '--' : String(Math.round(v)); }
-function fmtT(v) { return (v === null || v === undefined || isNaN(v)) ? '--' : Number(v).toFixed(1); }
-
-/* ---------- Nhiệt kế + thanh đo ---------- */
-function setThermo(t) {
-  const f = Math.max(0, Math.min(1, (t || 0) / 60)), y = 165 - f * 140, m = $('merc');
-  m.setAttribute('y', y.toFixed(1)); m.setAttribute('height', (200 - y).toFixed(1));
-}
-function setMeter(k, v, thr, unit) {
-  const max = thr * 1.6, f = Math.max(0, Math.min(1, (v || 0) / max));
-  $(k + 'Cover').style.width = ((1 - f) * 100).toFixed(1) + '%';
-  $(k + 'Mark').style.left = (thr / max * 100).toFixed(1) + '%';
-  $(k + 'Thr').textContent = 'Ngưỡng ' + thr + unit;
-}
+/* ---------- Số chạy mượt ---------- */
 function animateNumber(node, to, digits) {
   if (to === null || to === undefined || isNaN(to)) { node.textContent = '--'; node._v = null; return; }
   const from = (node._v === null || node._v === undefined) ? to : node._v;
@@ -776,184 +300,166 @@ function animateNumber(node, to, digits) {
   })(t0);
 }
 
-/* ---------- Biểu đồ tự vẽ (không cần thư viện ngoài) ---------- */
-const CHARTS = [];
-function niceMax(v) { const m = Math.pow(10, Math.floor(Math.log10(v))), f = v / m; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * m; }
-class MiniChart {
-  constructor(cv, color, o) {
-    this.cv = cv; this.color = color; this.o = o || {}; this.labels = []; this.data = []; this.hover = -1; this.geo = null; this.W = 0;
-    CHARTS.push(this);
-    this.ro = new ResizeObserver(() => this.draw()); this.ro.observe(cv.parentElement);
-    cv.addEventListener('pointermove', e => {
-      if (!this.geo || this.data.length < 2) return;
-      const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * this.W;
-      this.hover = Math.max(0, Math.min(this.data.length - 1, Math.round((x - this.geo.L) / this.geo.step)));
-    });
-    cv.addEventListener('pointerleave', () => { this.hover = -1; });
+/* ---------- Còi trên trình duyệt ---------- */
+let audio = null, soundOn = false, sirenTimer = null, hi = false, curState = 'off';
+const soundBtn = document.getElementById('soundBtn');
+soundBtn.onclick = () => {
+  soundOn = !soundOn;
+  if (soundOn) {
+    try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) { soundOn = false; }
   }
-  set(labels, data) { this.labels = labels; this.data = data; }
-  destroy() { this.ro.disconnect(); const i = CHARTS.indexOf(this); if (i >= 0) CHARTS.splice(i, 1); }
-  draw() {
-    const cv = this.cv, p = cv.parentElement, W = p.clientWidth, H = p.clientHeight;
-    if (!W || !H) return;
-    this.W = W;
-    const rect = p.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
-    const bw = Math.max(1, Math.round(rect.width * dpr)), bh = Math.max(1, Math.round(rect.height * dpr));
-    if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
-    cv.style.width = W + 'px'; cv.style.height = H + 'px';
-    const c = cv.getContext('2d'); c.setTransform(bw / W, 0, 0, bh / H, 0, 0); c.clearRect(0, 0, W, H);
-    const big = !!this.o.big, L = big ? 46 : 40, R = 14, T = 10, B = big ? 26 : 8, iw = W - L - R, ih = H - T - B;
-    const d = this.data, n = d.length, col = this.color;
-    const fin = d.filter(v => v !== null && v !== undefined && isFinite(v));
-    let ymax = this.o.max;
-    if (ymax === undefined) ymax = niceMax(Math.max(this.o.floor || 1, ...(fin.length ? fin : [1]), this.o.thr && big ? this.o.thr : 0) * 1.12);
-    const ticks = this.o.ticks || 4;
-    c.font = (big ? 12 : 11.5) + 'px ' + getComputedStyle(document.body).fontFamily; c.textBaseline = 'middle';
-    c.lineWidth = 1; c.strokeStyle = 'rgba(120,150,220,.17)'; c.fillStyle = '#c8d6f0'; c.textAlign = 'right';
-    for (let k = 0; k <= ticks; k++) {
-      const y = Math.round(T + ih - k / ticks * ih) + .5, v = ymax * k / ticks;
-      c.beginPath(); c.moveTo(L, y); c.lineTo(L + iw, y); c.stroke();
-      c.fillText(v >= 10 ? Math.round(v) : v.toFixed(1), L - 8, y);
+  soundBtn.textContent = soundOn ? '🔊 Còi web: bật' : '🔇 Còi web: tắt';
+  soundBtn.classList.toggle('active', soundOn);
+  applySiren();
+};
+function beep(freq) {
+  if (!audio) return;
+  const o = audio.createOscillator(), g = audio.createGain();
+  o.type = 'square'; o.frequency.value = freq; g.gain.value = 0.05;
+  o.connect(g); g.connect(audio.destination);
+  o.start(); o.stop(audio.currentTime + 0.35);
+}
+function applySiren() {
+  const alarm = curState === 'fire' || curState === 'warn';
+  if (soundOn && alarm) {
+    if (!sirenTimer) sirenTimer = setInterval(() => { hi = !hi; beep(hi ? 900 : 650); }, 400);
+  } else { clearInterval(sirenTimer); sirenTimer = null; }
+}
+
+/* ---------- Biểu đồ ---------- */
+function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function mkGrad(color) {
+  return (c) => {
+    const area = c.chart.chartArea;
+    if (!area) return color + '33';
+    const g = c.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+    g.addColorStop(0, color + '77'); g.addColorStop(1, color + '00');
+    return g;
+  };
+}
+function mkChart(id, color, on, off) {
+  return new Chart(document.getElementById(id), {
+    type: 'line',
+    data: { labels: [], datasets: [
+      { data: [], borderColor: color, borderWidth: 2.2, pointRadius: 0, tension: .3, fill: true,
+        backgroundColor: mkGrad(color), spanGaps: false,
+        segment: { borderColor: (c) => (c.p1.parsed.y >= on ? COLORS.danger : color) } },
+      { data: [], borderColor: COLORS.danger, borderWidth: 1.2, borderDash: [6, 4], pointRadius: 0, fill: false },
+      { data: [], borderColor: COLORS.warn, borderWidth: 1, borderDash: [2, 4], pointRadius: 0, fill: false },
+    ]},
+    options: {
+      animation: false, responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false },
+                 tooltip: { filter: (i) => i.datasetIndex === 0 } },
+      scales: { x: { ticks: { maxTicksLimit: 6, color: '#8a9bb3' }, grid: { display: false } },
+                y: { ticks: { color: '#8a9bb3' }, grid: { color: 'rgba(138,155,179,.15)' } } }
     }
-    for (let k = 0; k <= 6; k++) { const x = Math.round(L + iw * k / 6) + .5; c.beginPath(); c.moveTo(x, T); c.lineTo(x, T + ih); c.stroke(); }
-    if (n === 0) { this.geo = null; return; }
-    const step = n > 1 ? iw / (n - 1) : 0, X = i => n > 1 ? L + i * step : L + iw / 2, Y = v => T + ih - Math.max(0, Math.min(1, v / ymax)) * ih;
-    this.geo = { L: L, step: step };
-    if (this.o.thr && big) {
-      const y = Y(this.o.thr); c.save(); c.setLineDash([6, 5]); c.strokeStyle = 'rgba(255,80,70,.85)'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(L, y); c.lineTo(L + iw, y); c.stroke(); c.restore();
-      c.fillStyle = '#ff8a80'; c.textAlign = 'right'; c.fillText('ngưỡng', L + iw - 4, y - 8);
-    }
-    const path = new Path2D(); let started = false, prev = null, first = null, last = null;
-    for (let i = 0; i < n; i++) {
-      const v = d[i];
-      if (v === null || v === undefined || !isFinite(v)) { started = false; continue; }
-      const x = X(i), y = Y(v);
-      if (!started) { path.moveTo(x, y); started = true; if (!first) first = { x: x, y: y }; }
-      else { path.quadraticCurveTo(prev.x, prev.y, (prev.x + x) / 2, (prev.y + y) / 2); }
-      prev = { x: x, y: y }; last = prev;
-    }
-    if (!last) return;
-    path.lineTo(last.x, last.y);
-    const area = new Path2D(path); area.lineTo(last.x, T + ih); area.lineTo(first.x, T + ih); area.closePath();
-    const g = c.createLinearGradient(0, T, 0, T + ih); g.addColorStop(0, col + '99'); g.addColorStop(1, col + '05');
-    c.fillStyle = g; c.fill(area);
-    c.save(); c.shadowColor = col; c.shadowBlur = 14; c.strokeStyle = col; c.lineWidth = 2.6; c.lineJoin = 'round'; c.lineCap = 'round'; c.stroke(path); c.restore();
-    if (!big && n <= 30) { c.fillStyle = col; for (let i = 0; i < n - 1; i++) { const v = d[i]; if (v === null || v === undefined) continue; c.beginPath(); c.arc(X(i), Y(v), 2.6, 0, 7); c.fill(); } }
-    const t = (Date.now() % 1400) / 1400;
-    c.save(); c.globalAlpha = 1 - t; c.strokeStyle = col; c.lineWidth = 2; c.beginPath(); c.arc(last.x, last.y, 6 + t * 12, 0, 7); c.stroke(); c.restore();
-    c.fillStyle = '#fff'; c.strokeStyle = col; c.lineWidth = 2.5; c.beginPath(); c.arc(last.x, last.y, big ? 4 : 5.5, 0, 7); c.fill(); c.stroke();
-    if (big) {
-      c.fillStyle = '#9fb3d6'; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
-      const cnt = Math.min(6, n); for (let k = 0; k < cnt; k++) { const i = Math.round(k * (n - 1) / Math.max(1, cnt - 1)); c.fillText(this.labels[i] || '', Math.max(L + 24, Math.min(L + iw - 24, X(i))), H - 6); }
-      c.textBaseline = 'middle';
-    }
-    const hv = this.hover;
-    if (hv >= 0 && hv < n && d[hv] !== null && d[hv] !== undefined) {
-      const x = X(hv), y = Y(d[hv]);
-      c.strokeStyle = 'rgba(255,255,255,.45)'; c.lineWidth = 1; c.beginPath(); c.moveTo(x, T); c.lineTo(x, T + ih); c.stroke();
-      c.fillStyle = '#fff'; c.beginPath(); c.arc(x, y, 4, 0, 7); c.fill();
-      const txt = (this.labels[hv] || '') + '  ' + (this.o.fmt ? this.o.fmt(d[hv]) : d[hv]), tw = c.measureText(txt).width + 16, bx = Math.max(L, Math.min(L + iw - tw, x - tw / 2)), by = Math.max(T, y - 34);
-      c.fillStyle = 'rgba(8,14,40,.94)'; c.strokeStyle = col; c.lineWidth = 1.2; c.beginPath(); c.roundRect ? c.roundRect(bx, by, tw, 22, 8) : c.rect(bx, by, tw, 22); c.fill(); c.stroke();
-      c.fillStyle = '#fff'; c.textAlign = 'left'; c.fillText(txt, bx + 8, by + 11);
-    }
+  });
+}
+const tChart = mkChart('tchart', '#f59e0b', CFG.tempOn, CFG.tempOff);
+const gChart = mkChart('gchart', '#38bdf8', CFG.gasOn, CFG.gasOff);
+function refreshChartColors() {
+  const m = cssVar('--muted');
+  for (const ch of [tChart, gChart]) {
+    ch.options.scales.x.ticks.color = m; ch.options.scales.y.ticks.color = m;
+    ch.update('none');
   }
 }
-const tChart = new MiniChart($('tchart'), '#ffb020', { min: 0, max: 60, ticks: 3, fmt: v => Number(v).toFixed(1) + '°C' });
-const gChart = new MiniChart($('gchart'), '#22d3ff', { floor: CFG.gasOn || 600, ticks: 4, fmt: v => Math.round(v) + ' ' + GU });
-let lastDraw = 0;
-(function loop(ts) { if (ts - lastDraw > 33) { lastDraw = ts; for (const ch of CHARTS) ch.draw(); } requestAnimationFrame(loop); })(0);
+function fillChart(ch, labels, data, on, off) {
+  ch.data.labels = labels;
+  ch.data.datasets[0].data = data;
+  ch.data.datasets[1].data = labels.map(() => on);
+  ch.data.datasets[2].data = labels.map(() => off);
+  ch.update('none');
+}
 
-/* ---------- Trạng thái hiển thị ---------- */
-const TXT = {
-  fire:  { t: 'CẢNH BÁO KHẨN CẤP!', m1: 'Nhiệt độ cao và khí gas vượt ngưỡng an toàn!', m2: 'HÃY RỜI KHỎI KHU VỰC NGAY LẬP TỨC!', st: 'ĐANG CẢNH BÁO', ss: 'Kích hoạt còi & gửi thông báo' },
-  warnT: { t: 'CẢNH BÁO NHIỆT ĐỘ CAO!', m1: 'Nhiệt độ vượt ngưỡng an toàn!', m2: 'HÃY KIỂM TRA KHU VỰC NGAY!', st: 'ĐANG CẢNH BÁO', ss: 'Kích hoạt còi & gửi thông báo' },
-  warnG: { t: 'CẢNH BÁO KHÍ GAS!', m1: 'Phát hiện khí gas / khói vượt ngưỡng!', m2: 'HÃY MỞ CỬA VÀ KIỂM TRA NGAY!', st: 'ĐANG CẢNH BÁO', ss: 'Kích hoạt còi & gửi thông báo' },
-  ok:    { t: 'HỆ THỐNG AN TOÀN', m1: 'Mọi chỉ số đang nằm trong ngưỡng cho phép.', m2: 'Không có nguy cơ cháy nổ', st: 'AN TOÀN', ss: 'Đang giám sát liên tục' },
-  off:   { t: 'MẤT KẾT NỐI', m1: 'Không nhận được dữ liệu mới từ mạch ESP32.', m2: 'Hãy kiểm tra nguồn và WiFi của mạch', st: 'MẤT KẾT NỐI', ss: 'Đang chờ dữ liệu từ ESP32' }
+/* ---------- Hiển thị ---------- */
+const fmtTime = ts => new Date(ts * 1000).toLocaleTimeString('vi-VN');
+function fmtDur(s) {
+  s = Math.floor(s);
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  if (d) return `${d} ngày ${h} giờ`;
+  if (h) return `${h} giờ ${m} phút`;
+  if (m) return `${m} phút`;
+  return `${s} giây`;
+}
+function stateKind(s) {
+  if (s === 'BAO CHAY!') return 'fire';
+  if (s === 'CANH BAO: NHIET' || s === 'CANH BAO: GAS') return 'warn';
+  return 'ok';
+}
+const HERO = {
+  fire: ['🚨', 'BÁO CHÁY!', 'Nhiệt độ và gas cùng vượt ngưỡng. Còi đang kêu.'],
+  warnT: ['⚠️', 'CẢNH BÁO: NHIỆT ĐỘ CAO', 'Nhiệt độ vượt ngưỡng. Còi đang kêu.'],
+  warnG: ['⚠️', 'CẢNH BÁO: PHÁT HIỆN GAS / KHÓI', 'Nồng độ khí vượt ngưỡng. Còi đang kêu.'],
+  ok: ['✅', 'AN TOÀN', 'Mọi chỉ số đang nằm trong ngưỡng cho phép.'],
+  off: ['📡', 'MẤT KẾT NỐI', 'Không nhận được dữ liệu mới từ mạch ESP32.'],
 };
-let lastTitleState = '', prevKind = null, alertDismissed = false;
+let lastTitleState = '';
 function setState(kind, s) {
   curState = kind;
   document.body.setAttribute('data-state', kind);
-  let key = kind;
-  if (kind === 'warn') key = (s && s.state === 'CANH BAO: GAS') ? 'warnG' : 'warnT';
-  const x = TXT[key];
-  $('bTitle').textContent = x.t; $('bMsg1').textContent = x.m1; $('bMsg2').textContent = x.m2;
-  $('sVal').textContent = x.st; $('sSub').textContent = x.ss;
-  const k2 = kind + (s ? s.state : '');
-  if (k2 !== lastTitleState) {
-    lastTitleState = k2;
-    document.title = (kind === 'fire' ? '🚨 BÁO CHÁY - ' : kind === 'warn' ? '⚠️ Cảnh báo - ' : '') + (CFG.title || 'Hệ thống báo cháy thông minh');
+  const roomS = document.getElementById('roomS');
+  roomS.setAttribute('class', 'room sensor ' + kind);
+  let h = HERO[kind];
+  if (kind === 'fire') h = HERO.fire;
+  else if (kind === 'warn') h = s && s.state === 'CANH BAO: GAS' ? HERO.warnG : HERO.warnT;
+  document.getElementById('hIco').textContent = h[0];
+  document.getElementById('hBig').textContent = h[1];
+  document.getElementById('hDesc').textContent = h[2];
+  const key = kind + (s ? s.state : '');
+  if (key !== lastTitleState) {
+    lastTitleState = key;
+    document.title = (kind === 'fire' ? '🚨 BÁO CHÁY - ' : kind === 'warn' ? '⚠️ Cảnh báo - ' : '') + CFG.title;
   }
-  const alarm = kind === 'fire' || kind === 'warn', was = prevKind === 'fire' || prevKind === 'warn';
-  if (alarm && !was) onAlarmStart(key, s);
-  if (!alarm) { ackd = false; alertDismissed = false; hideAlertBar(); }
-  prevKind = kind;
   applySiren();
 }
-function setBadge(node, on, textOn, textOff) {
-  node.className = 'badge ' + (on ? 'bad' : 'good');
-  node.innerHTML = `<svg class="bi" viewBox="0 0 24 24"><use href="#${on ? 'i-warn' : 'i-ok'}"/></svg><span>${on ? textOn : textOff}</span>`;
+function tag(node, on, textOn, textOff, cls) {
+  node.textContent = on ? textOn : textOff;
+  node.className = 'tag' + (on ? ' ' + cls : '');
 }
-setBadge($('tBadge'), false, '', 'Chưa có dữ liệu');
-setBadge($('gBadge'), false, '', 'Chưa có dữ liệu');
-
-/* ---------- Thanh cảnh báo + thông báo trình duyệt ---------- */
-function showAlertBar(key, s) {
-  const bar = $('alertbar'), x = TXT[key];
-  bar.classList.toggle('warnc', key !== 'fire');
-  $('abT').textContent = (key === 'fire' ? '🚨 ' : '⚠️ ') + x.t;
-  $('abS').textContent = s ? `Nhiệt độ ${fmtT(s.temp)} °C  |  Khí gas ${fmtGas(s.gas)} ${GU}` : x.m1;
-  bar.classList.remove('show'); void bar.offsetWidth; bar.classList.add('show');
-}
-function hideAlertBar() { $('alertbar').classList.remove('show'); }
-function onAlarmStart(key, s) {
-  showAlertBar(key, s);
-  try { if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 600]); } catch (e) {}
-  try { if ('Notification' in window && Notification.permission === 'granted') new Notification(TXT[key].t, { body: `Nhiệt độ ${fmtT(s && s.temp)} °C | Khí gas ${fmtGas(s && s.gas)} ${GU}` }); } catch (e) {}
-}
-$('abAck').onclick = () => { ackd = true; applySiren(); hideAlertBar(); toast('Đã tắt còi trên trình duyệt cho đợt báo động này'); };
-$('abClose').onclick = hideAlertBar;
-
-let LAST = null, STATS = null, HIST = [], EVENTS = [];
 
 async function pollLatest() {
-  const ct = $('connText'), pill = $('connPill');
+  const ct = document.getElementById('connText'), dot = document.getElementById('dot');
   try {
     const r = await fetch('/api/latest', { cache: 'no-store' });
     const d = await r.json();
     const s = d.latest;
-    if (!s) { pill.className = 'pill conn off'; ct.textContent = 'Offline'; setState('off', null); return; }
-    LAST = s; STATS = d.stats;
-    const live = (d.server_time - s.ts) < 10;
-    pill.className = 'pill conn ' + (live ? 'on' : 'off');
-    ct.textContent = live ? 'Online' : 'Offline';
+    if (!s) { dot.classList.remove('on'); ct.textContent = 'Chưa nhận được dữ liệu từ ESP32'; setState('off', null); return; }
+    const age = d.server_time - s.ts;
+    const live = age < 10;
+    dot.classList.toggle('on', live);
+    ct.textContent = live ? 'Đang nhận dữ liệu' : 'Mất kết nối ESP32';
+
     if (!live) setState('off', s); else setState(stateKind(s.state), s);
 
-    animateNumber($('tVal'), s.temp, 1);
-    animateNumber($('gVal'), s.gas, 0);
-    setThermo(s.temp);
-    setMeter('t', s.temp, CFG.tempOn, '°C');
-    setMeter('g', s.gas, CFG.gasOn, ' ' + GU);
-    $('tCard').classList.toggle('alarm', !!s.temp_alarm);
-    setBadge($('tBadge'), !!s.temp_alarm, 'CẢNH BÁO NHIỆT ĐỘ CAO', 'NHIỆT ĐỘ BÌNH THƯỜNG');
-    setBadge($('gBadge'), !!s.gas_alarm, 'CẢNH BÁO KHÍ GAS CAO!', 'KHÍ GAS BÌNH THƯỜNG');
-    $('tChipV').textContent = fmtT(s.temp) + '°C';
-    $('gChipV').textContent = fmtGas(s.gas) + ' ' + GU;
-    if (!EVENTS.length) renderLatestAlert();
-  } catch (e) { pill.className = 'pill conn off'; ct.textContent = 'Offline'; }
-}
+    animateNumber(document.getElementById('tVal'), s.temp, 1);
+    animateNumber(document.getElementById('gVal'), s.gas, 0);
+    setNeedle(needleT, s.temp, TMAX);
+    setNeedle(needleG, s.gas, GMAX);
+    tag(document.getElementById('tTag'), s.temp_alarm, 'Cờ nhiệt: BẬT', 'Cờ nhiệt: tắt', 'danger');
+    tag(document.getElementById('gTag'), s.gas_alarm, 'Cờ gas: BẬT', 'Cờ gas: tắt', 'danger');
+    document.getElementById('tHint').textContent = `Bật cờ ≥ ${CFG.tempOn}°C, tắt ≤ ${CFG.tempOff}°C`;
+    document.getElementById('gHint').textContent = `Bật cờ ≥ ${CFG.gasOn}, tắt ≤ ${CFG.gasOff}`;
 
-const EV_MSG = { 'BAO CHAY!': 'Cảnh báo: Nhiệt độ và khí gas cao!', 'CANH BAO: NHIET': 'Cảnh báo: Nhiệt độ cao!', 'CANH BAO: GAS': 'Cảnh báo: Khí gas cao!' };
-function renderLatestAlert() {
-  let e = null;
-  for (const x of EVENTS) if (EV_MSG[x.state] && (!e || x.ts > e.ts)) e = x;
-  if (!e) { $('aLine').innerHTML = '<span class="gr">Chưa có cảnh báo nào</span>'; $('aSub').textContent = ''; return; }
-  let near = null;
-  for (const h of HIST) if (!near || Math.abs(h.ts - e.ts) < Math.abs(near.ts - e.ts)) near = h;
-  if (!near) near = LAST;
-  $('aLine').innerHTML = `<span>${fmtTime(e.ts)}</span> - <span class="red">${EV_MSG[e.state]}</span>`;
-  $('aSub').innerHTML = near ? `Nhiệt độ: ${fmtT(near.temp)} °C <span class="sep">|</span> Khí gas: ${fmtGas(near.gas)} ${GU}` : '';
+    document.getElementById('chipBuzzer').textContent = s.buzzer ? '🔔 Còi đang kêu' : '🔕 Còi tắt';
+    document.getElementById('chipSource').textContent = 'Nguồn: ' + ({ serial: 'USB', wifi: 'WiFi', demo: 'Dữ liệu giả' }[s.source] || s.source);
+    document.getElementById('chipAge').textContent = `Cập nhật: ${fmtTime(s.ts)}`;
+
+    const st = d.stats;
+    document.getElementById('sMax').textContent = st.max_temp === null ? '--' : st.max_temp.toFixed(1);
+    document.getElementById('sMin').textContent = st.min_temp === null ? '--' : st.min_temp.toFixed(1);
+    document.getElementById('sGas').textContent = st.max_gas === null ? '--' : st.max_gas;
+    document.getElementById('sAlarm').textContent = st.alarm_count;
+    document.getElementById('sFire').textContent = st.fire_count;
+    document.getElementById('sUp').textContent = fmtDur(st.uptime);
+    const pTg = document.getElementById('pTg');
+    pTg.textContent = '📱 Thông báo điện thoại: ' + (st.telegram ? 'BẬT' : 'chưa cấu hình');
+    pTg.classList.toggle('on', !!st.telegram);
+  } catch (e) {
+    dot.classList.remove('on'); ct.textContent = 'Không kết nối được server';
+  }
 }
 
 const LOG_COLOR = { fire: COLORS.danger, warn: COLORS.warn, ok: COLORS.ok };
@@ -962,123 +468,19 @@ async function pollHistory() {
   try {
     const r = await fetch('/api/history?n=300', { cache: 'no-store' });
     const d = await r.json();
-    HIST = d.history || []; EVENTS = d.events || [];
-    if (HIST.length) {
-      const h = HIST.slice(-24), labels = h.map(x => fmtTime(x.ts));
-      tChart.set(labels, h.map(x => x.temp)); gChart.set(labels, h.map(x => x.gas));
-      drawSpark(HIST.slice(-30).map(x => x.temp));
-    }
-    renderLatestAlert();
-    refreshBigCharts();
-  } catch (e) { /* lần sau thử lại */ }
-}
-function drawSpark(vals) {
-  const v = vals.filter(x => x !== null && x !== undefined);
-  if (v.length < 2) { $('spark').setAttribute('points', ''); return; }
-  const mn = Math.min(...v), mx = Math.max(...v), rg = (mx - mn) || 1;
-  $('spark').setAttribute('points', v.map((y, i) => `${(i / (v.length - 1) * 200).toFixed(1)},${(44 - (y - mn) / rg * 38).toFixed(1)}`).join(' '));
+    const h = d.history;
+    if (!h.length) return;
+    const labels = h.map(x => fmtTime(x.ts));
+    fillChart(tChart, labels, h.map(x => x.temp), CFG.tempOn, CFG.tempOff);
+    fillChart(gChart, labels, h.map(x => x.gas), CFG.gasOn, CFG.gasOff);
+    const log = document.getElementById('log');
+    log.innerHTML = d.events.length
+      ? d.events.map(e => `<li><span class="d" style="background:${LOG_COLOR[stateKind(e.state)]}"></span><span>${LOG_TEXT[e.state] || e.state}</span><span class="t">${fmtTime(e.ts)}</span></li>`).join('')
+      : '<li class="muted">Chưa có sự kiện</li>';
+  } catch (e) { /* bỏ qua, lần sau thử lại */ }
 }
 
-/* ---------- Cửa sổ phụ ---------- */
-let bigCharts = null;
-function openModal(title, html) { $('mTitle').textContent = title; $('mBody').innerHTML = html; $('modal').classList.add('show'); }
-function closeModal() {
-  $('modal').classList.remove('show');
-  if (bigCharts) { bigCharts.t.destroy(); bigCharts.g.destroy(); bigCharts = null; }
-  setActiveNav('navHome');
-}
-$('mClose').onclick = closeModal;
-$('modal').onclick = e => { if (e.target === $('modal')) closeModal(); };
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-function setActiveNav(id) { document.querySelectorAll('.nav').forEach(b => b.classList.toggle('active', b.id === id)); }
-function refreshBigCharts() {
-  if (!bigCharts) return;
-  const labels = HIST.map(x => fmtTime(x.ts));
-  bigCharts.t.set(labels, HIST.map(x => x.temp)); bigCharts.g.set(labels, HIST.map(x => x.gas));
-  const log = $('mLog');
-  if (log) log.innerHTML = EVENTS.length
-    ? EVENTS.map(e => `<li><span class="d" style="background:${LOG_COLOR[stateKind(e.state)]}"></span><span>${LOG_TEXT[e.state] || e.state}</span><span class="t">${fmtTime(e.ts)}</span></li>`).join('')
-    : '<li class="muted">Chưa có sự kiện</li>';
-}
-function exportCSV() {
-  if (!HIST.length) { toast('Chưa có dữ liệu để xuất', true); return; }
-  const rows = ['thoi_gian,nhiet_do_C,gas_' + GU].concat(HIST.map(h => `${new Date(h.ts * 1000).toLocaleString('vi-VN', { hour12: false }).replace(',', '')},${h.temp ?? ''},${h.gas ?? ''}`));
-  const url = URL.createObjectURL(new Blob(['﻿' + rows.join('\n')], { type: 'text/csv;charset=utf-8' }));
-  const a = document.createElement('a'); a.href = url; a.download = 'du-lieu-bao-chay.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-  toast('Đã xuất ' + HIST.length + ' dòng dữ liệu');
-}
-$('navHome').onclick = () => { closeModal(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-$('navChart').onclick = () => {
-  setActiveNav('navChart');
-  openModal('Biểu đồ chi tiết', `<div class="mk"><span>Nhiệt độ theo thời gian</span><button class="sw" id="csvBtn" type="button">⬇ Xuất CSV</button></div><div class="bigchart"><canvas id="bt"></canvas></div>
-    <div class="mk"><span>Khí gas (${GU}) theo thời gian</span></div><div class="bigchart"><canvas id="bg"></canvas></div>
-    <div class="mk" style="margin-bottom:6px"><span>Nhật ký đổi trạng thái</span></div><ul class="log" id="mLog"></ul>`);
-  bigCharts = {
-    t: new MiniChart($('bt'), '#ffb020', { big: true, min: 0, max: 60, ticks: 3, thr: CFG.tempOn, fmt: v => Number(v).toFixed(1) + '°C' }),
-    g: new MiniChart($('bg'), '#22d3ff', { big: true, floor: CFG.gasOn || 600, ticks: 4, thr: CFG.gasOn, fmt: v => Math.round(v) + ' ' + GU })
-  };
-  $('csvBtn').onclick = exportCSV;
-  refreshBigCharts();
-};
-$('navSet').onclick = () => {
-  setActiveNav('navSet');
-  const np = ('Notification' in window) ? Notification.permission : 'unsupported';
-  const nTxt = np === 'granted' ? 'Đã bật' : np === 'denied' ? 'Bị chặn' : np === 'unsupported' ? 'Không hỗ trợ' : 'Bật thông báo';
-  openModal('Cài đặt', `<div class="mrow"><div><b>Còi trên trình duyệt</b><div class="muted" style="font-size:13px">Phát âm báo động ngay trên trang này khi có cảnh báo</div></div><button class="sw ${soundOn ? 'on' : ''}" id="swSound" type="button">${soundOn ? 'Đang bật' : 'Đang tắt'}</button></div>
-    <div class="mrow"><div><b>Thử âm thanh còi</b></div><button class="sw" id="swTest" type="button">Phát thử</button></div>
-    <div class="mrow"><div><b>Thông báo của trình duyệt</b><div class="muted" style="font-size:13px">Hiện thông báo trên máy khi bắt đầu có báo động</div></div><button class="sw ${np === 'granted' ? 'on' : ''}" id="swNotif" type="button">${nTxt}</button></div>
-    <div class="mnote">Ngưỡng cảnh báo cấu hình ở phía server: nhiệt độ bật ≥ ${CFG.tempOn}°C / tắt ≤ ${CFG.tempOff}°C; gas bật ≥ ${CFG.gasOn} / tắt ≤ ${CFG.gasOff}.</div>`);
-  $('swSound').onclick = () => { setSound(!soundOn); $('swSound').textContent = soundOn ? 'Đang bật' : 'Đang tắt'; $('swSound').classList.toggle('on', soundOn); };
-  $('swTest').onclick = () => { if (!audio) setSound(true); beep(900); setTimeout(() => beep(650), 400); };
-  $('swNotif').onclick = async () => {
-    if (!('Notification' in window)) return toast('Trình duyệt không hỗ trợ thông báo', true);
-    try { const p = await Notification.requestPermission(); $('swNotif').textContent = p === 'granted' ? 'Đã bật' : p === 'denied' ? 'Bị chặn' : 'Bật thông báo'; $('swNotif').classList.toggle('on', p === 'granted'); } catch (e) { toast('Không bật được thông báo', true); }
-  };
-};
-$('navInfo').onclick = () => {
-  setActiveNav('navInfo');
-  const st = STATS || {}, s = LAST || {}, v = (x, f) => (x === null || x === undefined) ? '--' : f(x);
-  openModal('Thông tin hệ thống', `<div class="mgrid">
-      <div class="mstat"><div class="a">Nhiệt độ cao nhất</div><div class="b">${v(st.max_temp, x => x.toFixed(1))} °C</div></div>
-      <div class="mstat"><div class="a">Nhiệt độ thấp nhất</div><div class="b">${v(st.min_temp, x => x.toFixed(1))} °C</div></div>
-      <div class="mstat"><div class="a">Gas cao nhất</div><div class="b">${v(st.max_gas, x => x)} ${GU}</div></div>
-      <div class="mstat"><div class="a">Số lần báo động</div><div class="b">${st.alarm_count ?? 0}</div></div>
-      <div class="mstat"><div class="a">Số lần báo cháy</div><div class="b">${st.fire_count ?? 0}</div></div>
-      <div class="mstat"><div class="a">Hệ thống chạy được</div><div class="b" style="font-size:16px">${v(st.uptime, fmtDur)}</div></div></div>
-    <div class="mrow"><span>Nguồn dữ liệu</span><b>${({ serial: 'USB', wifi: 'WiFi', demo: 'Dữ liệu giả' })[s.source] || s.source || '--'}</b></div>
-    <div class="mrow"><span>Còi trên mạch</span><b>${s.buzzer ? '🔔 Đang kêu' : '🔕 Tắt'}</b></div>
-    <div class="mrow"><span>Cập nhật lần cuối</span><b>${s.ts ? fmtTime(s.ts) : '--'}</b></div>
-    <div class="mrow"><span>Thông báo điện thoại</span><b>${st.telegram ? 'BẬT' : 'Chưa cấu hình'}</b></div>
-    ${CFG.team ? `<div class="mrow"><span>Thực hiện</span><b>${CFG.team}</b></div>` : ''}
-    ${CFG.gasUnit ? '' : '<div class="mnote">Lưu ý: giá trị khí gas đọc từ cảm biến MQ2 là giá trị ADC (0–4095), đơn vị "ppm" trên giao diện chỉ mang tính minh họa.</div>'}`);
-};
-
-/* ---------- Toàn màn hình ---------- */
-$('fsBtn').onclick = () => {
-  try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); } catch (e) { toast('Trình duyệt không hỗ trợ toàn màn hình', true); }
-};
-document.addEventListener('fullscreenchange', fit);
-
-/* ---------- Vệt sáng con trỏ + nghiêng 3D ---------- */
-(function () {
-  const cg = $('cg');
-  addEventListener('pointermove', e => { cg.style.transform = `translate(${e.clientX}px,${e.clientY}px)`; cg.style.opacity = 1; });
-  if (!matchMedia('(hover:hover) and (pointer:fine)').matches) return;
-  document.querySelectorAll('.card, .cpanel').forEach(el => {
-    el.addEventListener('pointermove', e => {
-      const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-      el.style.transform = `perspective(900px) rotateX(${(-y * 4).toFixed(2)}deg) rotateY(${(x * 5).toFixed(2)}deg)`;
-    });
-    el.addEventListener('pointerleave', () => { el.style.transform = ''; });
-  });
-})();
-
-/* ---------- Khởi động ---------- */
-setTimeout(() => $('boot').classList.add('hide'), 1500);
-setTimeout(() => { const b = $('boot'); if (b) b.remove(); }, 2300);
-setThermo(0);
-setMeter('t', 0, CFG.tempOn, '°C');
-setMeter('g', 0, CFG.gasOn, ' ' + GU);
+applyTheme(store('theme') === 'light' ? 'light' : 'dark');
 pollLatest(); pollHistory();
 setInterval(pollLatest, 1000);
 setInterval(pollHistory, 4000);
